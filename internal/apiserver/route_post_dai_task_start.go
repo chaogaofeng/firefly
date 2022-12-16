@@ -10,13 +10,12 @@ import (
 )
 
 var postTaskStart = &ffapi.Route{
-	Name:   "postTaskStart",
-	Path:   "dai/startTask",
-	Method: http.MethodPost,
-	PathParams: []*ffapi.PathParam{
-		{Name: "nameOrId", Description: coremsgs.APIParamsTaskNameOrID},
-	},
+	Name:       "postTaskStart",
+	Path:       "dai/startTask",
+	Method:     http.MethodPost,
+	PathParams: nil,
 	QueryParams: []*ffapi.QueryParam{
+		{Name: "nameOrId", Description: coremsgs.APIParamsTaskNameOrID},
 		{Name: "confirm", Description: coremsgs.APIConfirmQueryParam, IsBool: true},
 	},
 	Description:     coremsgs.APIEndpointsPostTastStart,
@@ -27,7 +26,7 @@ var postTaskStart = &ffapi.Route{
 		CoreJSONHandler: func(r *ffapi.APIRequest, cr *coreRequest) (output interface{}, err error) {
 			waitConfirm := strings.EqualFold(r.QP["confirm"], "true")
 			r.SuccessStatus = syncRetcode(waitConfirm)
-			return cr.or.Dai().StartTask(cr.ctx, r.PP["nameOrId"], waitConfirm)
+			return cr.or.Dai().StartTask(cr.ctx, r.QP["nameOrId"], waitConfirm)
 		},
 	},
 }
