@@ -62,7 +62,7 @@ type Plugin interface {
 	SubmitBatchPin(ctx context.Context, nsOpID, networkNamespace, signingKey string, batch *BatchPin, location *fftypes.JSONAny) error
 
 	// SubmitNetworkAction writes a special "BatchPin" event which signals the plugin to take an action
-	SubmitNetworkAction(ctx context.Context, nsOpID, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny) error
+	SubmitNetworkAction(ctx context.Context, nsOpID, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny, payload string) error
 
 	// DeployContract submits a new transaction to deploy a new instance of a smart contract
 	DeployContract(ctx context.Context, nsOpID, signingKey string, definition, contract *fftypes.JSONAny, input []interface{}, options map[string]interface{}) error

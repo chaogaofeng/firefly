@@ -118,7 +118,7 @@ func (mm *multipartyManager) RunOperation(ctx context.Context, op *core.Prepared
 
 	case networkActionData:
 		contract := mm.namespace.Contracts.Active
-		return nil, false, mm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), data.Key, data.Type, contract.Location)
+		return nil, false, mm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), data.Key, data.Type, contract.Location, "")
 
 	default:
 		return nil, false, i18n.NewError(ctx, coremsgs.MsgOperationDataIncorrect, op.Data)

@@ -33,6 +33,7 @@ import (
 	"github.com/hyperledger/firefly/internal/cache"
 	"github.com/hyperledger/firefly/internal/coreconfig"
 	"github.com/hyperledger/firefly/internal/coremsgs"
+	"github.com/hyperledger/firefly/internal/dai/daifactory"
 	"github.com/hyperledger/firefly/internal/database/difactory"
 	"github.com/hyperledger/firefly/internal/dataexchange/dxfactory"
 	"github.com/hyperledger/firefly/internal/events/eifactory"
@@ -46,6 +47,7 @@ import (
 	"github.com/hyperledger/firefly/internal/tokens/tifactory"
 	"github.com/hyperledger/firefly/pkg/blockchain"
 	"github.com/hyperledger/firefly/pkg/core"
+	"github.com/hyperledger/firefly/pkg/dai"
 	"github.com/hyperledger/firefly/pkg/database"
 	"github.com/hyperledger/firefly/pkg/dataexchange"
 	"github.com/hyperledger/firefly/pkg/events"
@@ -62,6 +64,7 @@ var (
 	dataexchangeConfig  = config.RootArray("plugins.dataexchange")
 	identityConfig      = config.RootArray("plugins.identity")
 	authConfig          = config.RootArray("plugins.auth")
+	daiConfig           = config.RootArray("plugins.dai")
 
 	// Deprecated configs
 	deprecatedTokensConfig        = config.RootArray("tokens")
@@ -104,6 +107,7 @@ type namespaceManager struct {
 		sharedstorage map[string]sharedStoragePlugin
 		dataexchange  map[string]dataExchangePlugin
 		tokens        map[string]tokensPlugin
+		dai           map[string]daiPlugin
 		events        map[string]eventsPlugin
 		auth          map[string]authPlugin
 	}
@@ -143,6 +147,11 @@ type tokensPlugin struct {
 type identityPlugin struct {
 	config config.Section
 	plugin identity.Plugin
+}
+
+type daiPlugin struct {
+	config config.Section
+	plugin dai.Plugin
 }
 
 type eventsPlugin struct {
@@ -188,6 +197,7 @@ func NewNamespaceManager(withDefaults bool) Manager {
 	iifactory.InitConfig(identityConfig)
 	tifactory.InitConfigDeprecated(deprecatedTokensConfig)
 	tifactory.InitConfig(tokensConfig)
+	daifactory.InitConfig(daiConfig)
 	authfactory.InitConfigArray(authConfig)
 
 	// Events still live at the root of the config
@@ -347,6 +357,11 @@ func (nm *namespaceManager) Start() error {
 			return err
 		}
 	}
+	for _, plugin := range nm.plugins.dai {
+		if err := plugin.plugin.Start(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -430,6 +445,13 @@ func (nm *namespaceManager) loadPlugins(ctx context.Context) (err error) {
 		}
 	}
 
+	if nm.plugins.dai == nil {
+		nm.plugins.dai, err = nm.getDaiPlugins(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	if nm.plugins.events == nil {
 		nm.plugins.events, err = nm.getEventPlugins(ctx)
 		if err != nil {
@@ -445,6 +467,30 @@ func (nm *namespaceManager) loadPlugins(ctx context.Context) (err error) {
 	}
 
 	return nil
+}
+
+func (nm *namespaceManager) getDaiPlugins(ctx context.Context) (plugins map[string]daiPlugin, err error) {
+	plugins = make(map[string]daiPlugin)
+	executorConfigArraySize := daiConfig.ArraySize()
+	for i := 0; i < executorConfigArraySize; i++ {
+		config := daiConfig.ArrayEntry(i)
+		name, pluginType, err := nm.validatePluginConfig(ctx, config, "dai")
+		if err != nil {
+			return nil, err
+		}
+
+		plugin, err := daifactory.GetPlugin(ctx, pluginType)
+		if err != nil {
+			return nil, err
+		}
+
+		plugins[name] = daiPlugin{
+			config: config.SubSection(pluginType),
+			plugin: plugin,
+		}
+	}
+
+	return plugins, err
 }
 
 func (nm *namespaceManager) getTokensPlugins(ctx context.Context) (plugins map[string]tokensPlugin, err error) {
@@ -750,6 +796,11 @@ func (nm *namespaceManager) initPlugins(ctx context.Context, cancelCtx context.C
 			return err
 		}
 	}
+	for _, entry := range nm.plugins.dai {
+		if err = entry.plugin.Init(ctx, cancelCtx, entry.config); err != nil {
+			return err
+		}
+	}
 	for _, entry := range nm.plugins.events {
 		if err = entry.plugin.Init(ctx, entry.config); err != nil {
 			return err
@@ -879,6 +930,10 @@ func (nm *namespaceManager) loadNamespace(ctx context.Context, name string, inde
 		for plugin := range nm.plugins.tokens {
 			plugins = append(plugins, plugin)
 		}
+
+		for plugin := range nm.plugins.dai {
+			plugins = append(plugins, plugin)
+		}
 	}
 
 	config := orchestrator.Config{
@@ -974,6 +1029,13 @@ func (nm *namespaceManager) validatePlugins(ctx context.Context, name string, pl
 				Name:   pluginName,
 				Plugin: instance.plugin,
 			})
+			continue
+		}
+		if instance, ok := nm.plugins.dai[pluginName]; ok {
+			result.Dai = orchestrator.DaiPlugin{
+				Name:   pluginName,
+				Plugin: instance.plugin,
+			}
 			continue
 		}
 		if instance, ok := nm.plugins.identity[pluginName]; ok {

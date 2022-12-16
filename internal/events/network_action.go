@@ -27,6 +27,14 @@ func (em *eventManager) actionTerminate(location *fftypes.JSONAny, event *blockc
 	return em.multiparty.TerminateContract(em.ctx, location, event)
 }
 
+func (em *eventManager) actionDaiExecutor(location *fftypes.JSONAny, event *blockchain.Event) error {
+	return em.dai.ExecutorContract(em.ctx, location, event)
+}
+
+func (em *eventManager) actionDaiTask(location *fftypes.JSONAny, event *blockchain.Event) error {
+	return em.dai.TaskContract(em.ctx, location, event)
+}
+
 func (em *eventManager) BlockchainNetworkAction(action string, location *fftypes.JSONAny, event *blockchain.Event, signingKey *core.VerifierRef) error {
 	if em.multiparty == nil {
 		log.L(em.ctx).Errorf("Ignoring network action from non-multiparty network!")
@@ -50,6 +58,10 @@ func (em *eventManager) BlockchainNetworkAction(action string, location *fftypes
 
 		if action == core.NetworkActionTerminate.String() {
 			err = em.actionTerminate(location, event)
+		} else if action == core.NetworkActionDaiExecutor.String() {
+			err = em.actionDaiExecutor(location, event)
+		} else if action == core.NetworkActionDaiTask.String() {
+			err = em.actionDaiTask(location, event)
 		} else {
 			log.L(em.ctx).Errorf("Ignoring unrecognized network action: %s", action)
 			return false, nil

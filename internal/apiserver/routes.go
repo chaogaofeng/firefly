@@ -122,6 +122,10 @@ var routes = append(
 		getTxnStatus,
 		getVerifierByID,
 		getVerifiers,
+		getExecutors,
+		getExecutorByNameOrID,
+		getTasks,
+		getTaskByNameOrID,
 		patchUpdateIdentity,
 		postContractAPIInvoke,
 		postContractAPIQuery,
@@ -156,6 +160,10 @@ var routes = append(
 		putContractAPI,
 		putSubscription,
 		postVerifiersResolve,
+		postExecutor,
+		postTask,
+		postTaskStart,
+		postTaskStop,
 	})...,
 )
 

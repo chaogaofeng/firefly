@@ -43,6 +43,10 @@ var (
 	TransactionTypeTokenApproval = fftypes.FFEnumValue("txtype", "token_approval")
 	// TransactionTypeDataPublish represents a publish to shared storage
 	TransactionTypeDataPublish = fftypes.FFEnumValue("txtype", "data_publish")
+	// TransactionTypeExecutor represents a dai executor
+	TransactionTypeDaiExecutor = fftypes.FFEnumValue("txtype", "dai_executor")
+	// TransactionTypeTask represents a dai task
+	TransactionTypeDaiTask = fftypes.FFEnumValue("txtype", "dai_task")
 )
 
 // TransactionRef refers to a transaction, in other types

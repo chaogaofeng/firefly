@@ -639,7 +639,7 @@ func (e *Ethereum) SubmitBatchPin(ctx context.Context, nsOpID, networkNamespace,
 	return e.invokeContractMethod(ctx, ethLocation.Address, signingKey, method, nsOpID, input, nil)
 }
 
-func (e *Ethereum) SubmitNetworkAction(ctx context.Context, nsOpID string, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny) error {
+func (e *Ethereum) SubmitNetworkAction(ctx context.Context, nsOpID string, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny, payload string) error {
 	ethLocation, err := parseContractLocation(ctx, location)
 	if err != nil {
 		return err
@@ -659,14 +659,14 @@ func (e *Ethereum) SubmitNetworkAction(ctx context.Context, nsOpID string, signi
 			blockchain.FireFlyActionPrefix + action,
 			ethHexFormatB32(nil),
 			ethHexFormatB32(nil),
-			"",
+			payload,
 			[]string{},
 		}
 	} else {
 		method = networkActionMethodABI
 		input = []interface{}{
 			blockchain.FireFlyActionPrefix + action,
-			"",
+			payload,
 		}
 	}
 

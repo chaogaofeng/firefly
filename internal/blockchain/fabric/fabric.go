@@ -649,7 +649,7 @@ func (f *Fabric) SubmitBatchPin(ctx context.Context, nsOpID, networkNamespace, s
 	return f.invokeContractMethod(ctx, fabricOnChainLocation.Channel, fabricOnChainLocation.Chaincode, batchPinMethodName, signingKey, nsOpID, prefixItems, input, nil)
 }
 
-func (f *Fabric) SubmitNetworkAction(ctx context.Context, nsOpID string, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny) error {
+func (f *Fabric) SubmitNetworkAction(ctx context.Context, nsOpID string, signingKey string, action core.NetworkActionType, location *fftypes.JSONAny, payload string) error {
 	fabricOnChainLocation, err := parseContractLocation(ctx, location)
 	if err != nil {
 		return err
@@ -671,7 +671,7 @@ func (f *Fabric) SubmitNetworkAction(ctx context.Context, nsOpID string, signing
 			"namespace":  "firefly:" + action,
 			"uuids":      hexFormatB32(nil),
 			"batchHash":  hexFormatB32(nil),
-			"payloadRef": "",
+			"payloadRef": payload,
 			"contexts":   []string{},
 		}
 	} else {
@@ -679,7 +679,7 @@ func (f *Fabric) SubmitNetworkAction(ctx context.Context, nsOpID string, signing
 		prefixItems = networkActionPrefixItems
 		pinInput = map[string]interface{}{
 			"action":  "firefly:" + action,
-			"payload": "",
+			"payload": "payload",
 		}
 	}
 

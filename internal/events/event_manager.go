@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/hyperledger/firefly/internal/dai"
 	"strconv"
 
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -113,9 +114,10 @@ type eventManager struct {
 	metrics            metrics.Manager
 	chainListenerCache cache.CInterface
 	multiparty         multiparty.Manager // optional
+	dai                dai.Manager
 }
 
-func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin, bi blockchain.Plugin, im identity.Manager, dh definitions.Handler, dm data.Manager, ds definitions.Sender, bm broadcast.Manager, pm privatemessaging.Manager, am assets.Manager, sd shareddownload.Manager, mm metrics.Manager, om operations.Manager, txHelper txcommon.Helper, transports map[string]events.Plugin, mp multiparty.Manager, cacheManager cache.Manager) (EventManager, error) {
+func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin, bi blockchain.Plugin, im identity.Manager, dh definitions.Handler, dm data.Manager, ds definitions.Sender, bm broadcast.Manager, pm privatemessaging.Manager, dai dai.Manager, am assets.Manager, sd shareddownload.Manager, mm metrics.Manager, om operations.Manager, txHelper txcommon.Helper, transports map[string]events.Plugin, mp multiparty.Manager, cacheManager cache.Manager) (EventManager, error) {
 	if di == nil || im == nil || dh == nil || dm == nil || om == nil || ds == nil || am == nil {
 		return nil, i18n.NewError(ctx, coremsgs.MsgInitializationNilDepError, "EventManager")
 	}
@@ -148,6 +150,7 @@ func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin
 		assets:         am,
 		sharedDownload: sd,
 		multiparty:     mp,
+		dai:            dai,
 		retry: retry.Retry{
 			InitialDelay: config.GetDuration(coreconfig.EventAggregatorRetryInitDelay),
 			MaximumDelay: config.GetDuration(coreconfig.EventAggregatorRetryMaxDelay),

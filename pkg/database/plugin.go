@@ -343,6 +343,34 @@ type iBlobCollection interface {
 	DeleteBlob(ctx context.Context, sequence int64) (err error)
 }
 
+type iDaiExecutorCollection interface {
+	// UpsertExecutor - Upsert a executor node
+	UpsertExecutor(ctx context.Context, node *core.Executor) error
+
+	// GetExecutor - Get a executor node by name
+	GetExecutor(ctx context.Context, namespace, name string) (*core.Executor, error)
+
+	// GetExecutorByID - Get a executor node by ID
+	GetExecutorByID(ctx context.Context, namespace string, id *fftypes.UUID) (*core.Executor, error)
+
+	// GetExecutors - Get executor nodes
+	GetExecutors(ctx context.Context, namespace string, filter Filter) ([]*core.Executor, *FilterResult, error)
+}
+
+type iDaiTaskCollection interface {
+	// UpsertTask - Upsert a task
+	UpsertTask(ctx context.Context, node *core.Task) error
+
+	// GetTask - Get a task by name
+	GetTask(ctx context.Context, namespace, name string) (*core.Task, error)
+
+	// GetTaskByID - Get a task by ID
+	GetTaskByID(ctx context.Context, namespace string, id *fftypes.UUID) (*core.Task, error)
+
+	// GetTasks - Get tasks
+	GetTasks(ctx context.Context, namespace string, filter Filter) ([]*core.Task, *FilterResult, error)
+}
+
 type iTokenPoolCollection interface {
 	// UpsertTokenPool - Upsert a token pool
 	UpsertTokenPool(ctx context.Context, pool *core.TokenPool) error
@@ -554,6 +582,8 @@ type PersistenceInterface interface {
 	iTokenBalanceCollection
 	iTokenTransferCollection
 	iTokenApprovalCollection
+	iDaiExecutorCollection
+	iDaiTaskCollection
 	iFFICollection
 	iFFIMethodCollection
 	iFFIEventCollection
@@ -600,6 +630,8 @@ const (
 	CollectionTokenPools        UUIDCollectionNS = "tokenpools"
 	CollectionTokenTransfers    UUIDCollectionNS = "tokentransfers"
 	CollectionTokenApprovals    UUIDCollectionNS = "tokenapprovals"
+	CollectionDaiExecutors      UUIDCollectionNS = "daiexecutors"
+	CollectionDaiTasks          UUIDCollectionNS = "daitasks"
 	CollectionFFIs              UUIDCollectionNS = "ffi"
 	CollectionFFIMethods        UUIDCollectionNS = "ffimethods"
 	CollectionFFIEvents         UUIDCollectionNS = "ffievents"
@@ -867,6 +899,34 @@ var TokenPoolQueryFactory = &queryFields{
 	"connector": &StringField{},
 	"tx.type":   &StringField{},
 	"tx.id":     &UUIDField{},
+}
+
+// ExecutorQueryFactory filter fields for executors
+var ExecutorQueryFactory = &queryFields{
+	"nodeuuid":    &UUIDField{},
+	"nodename":    &StringField{},
+	"nodetag":     &StringField{},
+	"modetype":    &Int64Field{},
+	"nodeaddress": &StringField{},
+	"nodeurl":     &StringField{},
+	"role":        &Int64Field{},
+	"nodestatus":  &Int64Field{},
+	// "message": &UUIDField{},
+	// "created": &TimeField{},
+	// "tx.type": &StringField{},
+	// "tx.id":   &UUIDField{},
+}
+
+// TaskQueryFactory filter fields for tasks
+var TaskQueryFactory = &queryFields{
+	"taskid":     &UUIDField{},
+	"taskname":   &StringField{},
+	"invoker":    &StringField{},
+	"taskstatus": &Int64Field{},
+	// "message": &UUIDField{},
+	// "created": &TimeField{},
+	// "tx.type": &StringField{},
+	// "tx.id":   &UUIDField{},
 }
 
 // TokenBalanceQueryFactory filter fields for token balances

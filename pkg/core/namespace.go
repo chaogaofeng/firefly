@@ -61,7 +61,9 @@ type NetworkActionType = fftypes.FFEnum
 
 var (
 	// NetworkActionTerminate request all network members to stop using the current contract and move to the next one configured
-	NetworkActionTerminate = fftypes.FFEnumValue("networkactiontype", "terminate")
+	NetworkActionTerminate   = fftypes.FFEnumValue("networkactiontype", "terminate")
+	NetworkActionDaiExecutor = fftypes.FFEnumValue("networkactiontype", "dai.executor")
+	NetworkActionDaiTask     = fftypes.FFEnumValue("networkactiontype", "dai.task")
 )
 
 type NetworkAction struct {

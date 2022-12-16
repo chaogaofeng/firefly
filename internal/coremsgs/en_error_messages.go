@@ -271,4 +271,7 @@ var (
 	MsgIdempotencyKeyDuplicateMessage     = ffe("FF10430", "Idempotency key '%s' already used for message '%s'", 409)
 	MsgIdempotencyKeyDuplicateTransaction = ffe("FF10431", "Idempotency key '%s' already used for transaction '%s'", 409)
 	MsgNonIdempotencyKeyConflictTxInsert  = ffe("FF10432", "Conflict on insert of transaction '%s'. No existing transaction matching idempotency key '%s' found", 409)
+	MsgUnknownDaiPlugin                   = ffe("FF10433", "Unknown dai plugin: %s")
+	MsgDaiExecutorDuplicate               = ffe("FF10435", "Duplicate executor: %s", 409)
+	MsgDaiTaskDuplicate                   = ffe("FF10436", "Duplicate task: %s", 409)
 )

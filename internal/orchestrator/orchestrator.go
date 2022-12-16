@@ -29,6 +29,7 @@ import (
 	"github.com/hyperledger/firefly/internal/cache"
 	"github.com/hyperledger/firefly/internal/contracts"
 	"github.com/hyperledger/firefly/internal/coremsgs"
+	"github.com/hyperledger/firefly/internal/dai"
 	"github.com/hyperledger/firefly/internal/data"
 	"github.com/hyperledger/firefly/internal/definitions"
 	"github.com/hyperledger/firefly/internal/events"
@@ -43,6 +44,7 @@ import (
 	"github.com/hyperledger/firefly/internal/txcommon"
 	"github.com/hyperledger/firefly/pkg/blockchain"
 	"github.com/hyperledger/firefly/pkg/core"
+	daiplugin "github.com/hyperledger/firefly/pkg/dai"
 	"github.com/hyperledger/firefly/pkg/database"
 	"github.com/hyperledger/firefly/pkg/dataexchange"
 	eventsplugin "github.com/hyperledger/firefly/pkg/events"
@@ -69,6 +71,7 @@ type Orchestrator interface {
 	NetworkMap() networkmap.Manager
 	Operations() operations.Manager
 	Identity() identity.Manager
+	Dai() dai.Manager
 
 	// Status
 	GetStatus(ctx context.Context) (*core.NamespaceStatus, error)
@@ -147,6 +150,11 @@ type SharedStoragePlugin struct {
 	Plugin sharedstorage.Plugin
 }
 
+type DaiPlugin struct {
+	Name   string
+	Plugin daiplugin.Plugin
+}
+
 type TokensPlugin struct {
 	Name   string
 	Plugin tokens.Plugin
@@ -168,6 +176,7 @@ type Plugins struct {
 	SharedStorage SharedStoragePlugin
 	DataExchange  DataExchangePlugin
 	Database      DatabasePlugin
+	Dai           DaiPlugin
 	Tokens        []TokensPlugin
 	Events        map[string]eventsplugin.Plugin
 	Auth          AuthPlugin
@@ -195,6 +204,7 @@ type orchestrator struct {
 	identity       identity.Manager
 	events         events.EventManager
 	networkmap     networkmap.Manager
+	dai            dai.Manager
 	defhandler     definitions.Handler
 	defsender      definitions.Sender
 	data           data.Manager
@@ -345,6 +355,10 @@ func (or *orchestrator) Assets() assets.Manager {
 	return or.assets
 }
 
+func (or *orchestrator) Dai() dai.Manager {
+	return or.dai
+}
+
 func (or *orchestrator) Contracts() contracts.Manager {
 	return or.contracts
 }
@@ -409,6 +423,13 @@ func (or *orchestrator) initMultiPartyComponents(ctx context.Context) (err error
 
 	if or.messaging == nil {
 		if or.messaging, err = privatemessaging.NewPrivateMessaging(ctx, or.namespace, or.database(), or.dataexchange(), or.blockchain(), or.identity, or.batch, or.data, or.syncasync, or.multiparty, or.metrics, or.operations, or.cacheManager); err != nil {
+			return err
+		}
+	}
+
+	if or.dai == nil {
+		or.dai, err = dai.NewDaiManager(ctx, or.namespace, or.config.DefaultKey, or.config.KeyNormalization, or.database(), or.blockchain(), or.identity, or.syncasync, or.broadcast, or.messaging, or.metrics, or.operations, or.txHelper)
+		if err != nil {
 			return err
 		}
 	}
@@ -517,7 +538,7 @@ func (or *orchestrator) initComponents(ctx context.Context) (err error) {
 	}
 
 	if or.events == nil {
-		or.events, err = events.NewEventManager(ctx, or.namespace, or.database(), or.blockchain(), or.identity, or.defhandler, or.data, or.defsender, or.broadcast, or.messaging, or.assets, or.sharedDownload, or.metrics, or.operations, or.txHelper, or.plugins.Events, or.multiparty, or.cacheManager)
+		or.events, err = events.NewEventManager(ctx, or.namespace, or.database(), or.blockchain(), or.identity, or.defhandler, or.data, or.defsender, or.broadcast, or.messaging, or.dai, or.assets, or.sharedDownload, or.metrics, or.operations, or.txHelper, or.plugins.Events, or.multiparty, or.cacheManager)
 		if err != nil {
 			return err
 		}
