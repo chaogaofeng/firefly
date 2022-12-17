@@ -8,6 +8,8 @@ CREATE TABLE daiexecutors (
   type           INTEGER,
   address        VARCHAR(1024),
   url            VARCHAR(1024),
+  ws            VARCHAR(1024),
+  mpc            VARCHAR(1024),
   role           INTEGER,
   status         INTEGER,
   author         VARCHAR(1024)   NOT NULL,

@@ -10,8 +10,10 @@ type Executor struct {
 	Type            int                `ffstruct:"Executor" json:"NodeType,omitempty"`
 	Address         string             `ffstruct:"Executor" json:"NodeAddress,omitempty"`
 	URL             string             `ffstruct:"Executor" json:"NodeURL,omitempty"`
+	WS              string             `ffstruct:"Executor" json:"NodeWebsocket,omitempty"`
+	MPC             string             `ffstruct:"Executor" json:"NodeMPC,omitempty"`
 	Role            int                `ffstruct:"Executor" json:"Role,omitempty"`
-	Status          int                `ffstruct:"Executor" json:"NodeStatus,omitempty"`
+	Status          int                `ffstruct:"Executor" json:"NodeStatus"`
 	Author          string             `ffstruct:"Executor" json:"author,omitempty" ffexcludeinput:"true"`
 	Message         *fftypes.UUID      `ffstruct:"Executor" json:"message,omitempty" ffexcludeinput:"true"`
 	MessageHash     *fftypes.Bytes32   `ffstruct:"Executor" json:"messageHash,omitempty" ffexcludeinput:"true"`
@@ -33,7 +35,7 @@ type Task struct {
 	Name            string                   `ffstruct:"Task" json:"TaskName,omitempty"`
 	Desc            string                   `ffstruct:"Task" json:"Desc,omitempty"`
 	Requester       string                   `ffstruct:"Task" json:"Invoker,omitempty"`
-	Status          int                      `ffstruct:"Task" json:"TaskStatus,omitempty"`
+	Status          int                      `ffstruct:"Task" json:"TaskStatus"`
 	Hosts           *fftypes.JSONObjectArray `ffstruct:"Task" json:"Hosts,omitempty"`
 	DataSets        *fftypes.JSONObjectArray `ffstruct:"Task" json:"DataSets,omitempty"`
 	Params          *fftypes.JSONObject      `ffstruct:"Task" json:"Params,omitempty"`

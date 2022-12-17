@@ -93,18 +93,14 @@ func (dm *daiManager) PrepareOperation(ctx context.Context, op *core.Operation) 
 }
 
 func (dm *daiManager) RunOperation(ctx context.Context, op *core.PreparedOperation) (outputs fftypes.JSONObject, complete bool, err error) {
-	key, err := dm.identity.NormalizeSigningKey(ctx, "", dm.keyNormalization)
-	if err != nil {
-		return nil, false, err
-	}
 	dataJson, _ := json.Marshal(op.Data)
 	switch op.Data.(type) {
 	case executorData:
 		contract := dm.namespace.Contracts.Active
-		return nil, false, dm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), key, core.NetworkActionDaiExecutor, contract.Location, string(dataJson))
+		return nil, false, dm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), dm.defaultKey, core.NetworkActionDaiExecutor, contract.Location, string(dataJson))
 	case taskData:
 		contract := dm.namespace.Contracts.Active
-		return nil, false, dm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), key, core.NetworkActionDaiTask, contract.Location, string(dataJson))
+		return nil, false, dm.blockchain.SubmitNetworkAction(ctx, op.NamespacedIDString(), dm.defaultKey, core.NetworkActionDaiTask, contract.Location, string(dataJson))
 
 	default:
 		return nil, false, i18n.NewError(ctx, coremsgs.MsgOperationDataIncorrect, op.Data)
@@ -112,31 +108,31 @@ func (dm *daiManager) RunOperation(ctx context.Context, op *core.PreparedOperati
 }
 
 func (dm *daiManager) OnOperationUpdate(ctx context.Context, op *core.Operation, update *core.OperationUpdate) error {
-	if op.Type == core.TransactionTypeDaiExecutor && update.Status == core.OpStatusSucceeded {
-		executorData, err := retrieveExecutorInputs(ctx, op)
-		if err != nil {
-			return err
-		}
-		dm.executorsMutex.Lock()
-		dm.executors[executorData.Name] = executorData
-		dm.executorsMutex.Unlock()
-	}
-
-	if op.Type == core.TransactionTypeDaiTask && update.Status == core.OpStatusSucceeded {
-		taskData, err := retrieveTaskInputs(ctx, op)
-		if err != nil {
-			return err
-		}
-		switch taskData.Status {
-		case TaskProcessing:
-			if err := dm.mpcStart(ctx, taskData); err != nil {
-				return err
-			}
-		case TaskStop:
-			if err := dm.mpcStop(ctx, taskData); err != nil {
-				return err
-			}
-		}
-	}
+	//if op.Type == core.TransactionTypeDaiExecutor && update.Status == core.OpStatusSucceeded {
+	//	executorData, err := retrieveExecutorInputs(ctx, op)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	dm.executorsMutex.Lock()
+	//	dm.executors[executorData.Name] = executorData
+	//	dm.executorsMutex.Unlock()
+	//}
+	//
+	//if op.Type == core.TransactionTypeDaiTask && update.Status == core.OpStatusSucceeded {
+	//	taskData, err := retrieveTaskInputs(ctx, op)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	switch taskData.Status {
+	//	case TaskProcessing:
+	//		if err := dm.mpcStart(ctx, taskData); err != nil {
+	//			return err
+	//		}
+	//	case TaskStop:
+	//		if err := dm.mpcStop(ctx, taskData); err != nil {
+	//			return err
+	//		}
+	//	}
+	//}
 	return nil
 }

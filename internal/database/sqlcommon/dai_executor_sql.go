@@ -22,6 +22,8 @@ var (
 		"type",
 		"address",
 		"url",
+		"ws",
+		"mpc",
 		"role",
 		"status",
 		"author",
@@ -90,6 +92,8 @@ func (s *SQLCommon) UpsertExecutor(ctx context.Context, executor *core.Executor)
 				Set("type", executor.Type).
 				Set("address", executor.Address).
 				Set("url", executor.URL).
+				Set("ws", executor.WS).
+				Set("mpc", executor.MPC).
 				Set("role", executor.Role).
 				Set("status", executor.Status).
 				Set("author", executor.Author).
@@ -118,6 +122,8 @@ func (s *SQLCommon) UpsertExecutor(ctx context.Context, executor *core.Executor)
 					executor.Type,
 					executor.Address,
 					executor.URL,
+					executor.WS,
+					executor.MPC,
 					executor.Role,
 					executor.Status,
 					executor.Author,
@@ -149,6 +155,8 @@ func (s *SQLCommon) executorResult(ctx context.Context, row *sql.Rows) (*core.Ex
 		&executor.Type,
 		&executor.Address,
 		&executor.URL,
+		&executor.WS,
+		&executor.MPC,
 		&executor.Role,
 		&executor.Status,
 		&executor.Author,
