@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS daiexecutors;
 CREATE TABLE daiexecutors (
-  seq            INTEGER         PRIMARY KEY AUTOINCREMENT,
+  seq            SERIAL         PRIMARY KEY,
   id             UUID            NOT NULL,
   namespace      VARCHAR(64)     NOT NULL,
   name           VARCHAR(64)     NOT NULL,

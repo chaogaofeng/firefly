@@ -1,10 +1,10 @@
 DROP TABLE IF EXISTS daitasks;
 CREATE TABLE daitasks (
-  seq            INTEGER         PRIMARY KEY AUTOINCREMENT,
+  seq            SERIAL         PRIMARY KEY,
   id             UUID            NOT NULL,
   namespace      VARCHAR(64)     NOT NULL,
   name           VARCHAR(64)     NOT NULL,
-  desc           TEXT,
+  description           TEXT,
   requester      VARCHAR(1024),
   status         INTEGER,
   hosts          TEXT,

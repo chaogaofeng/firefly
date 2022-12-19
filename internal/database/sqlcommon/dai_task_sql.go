@@ -18,7 +18,7 @@ var (
 		"id",
 		"namespace",
 		"name",
-		"desc",
+		"description",
 		"requester",
 		"status",
 		"hosts",
@@ -83,7 +83,7 @@ func (s *SQLCommon) UpsertTask(ctx context.Context, task *core.Task) (err error)
 		if _, err = s.updateTx(ctx, taskTable, tx,
 			sq.Update(taskTable).
 				Set("name", task.Name).
-				Set("desc", task.Desc).
+				Set("description", task.Desc).
 				Set("requester", task.Requester).
 				Set("status", task.Status).
 				Set("hosts", task.Hosts).

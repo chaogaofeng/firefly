@@ -138,7 +138,7 @@ func (dm *daiManager) init(ctx context.Context) error {
 			case <-timer.C:
 				// 更新节点状态
 				dm.syncExecutorStatus(ctx)
-				// 更新Started任务的状态
+				//// 更新Started任务的状态
 				dm.syncTaskStatus(ctx)
 			}
 		}
@@ -276,6 +276,13 @@ func (dm *daiManager) PublishTask(ctx context.Context, taskInput *core.TaskInput
 		return nil, err
 	} else if existing != nil {
 		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskDuplicate, taskInput.Name)
+	}
+	for _, host := range *taskInput.Task.Hosts {
+		id := host.GetString("NodeId")
+		_, err := dm.GetExecutorByNameOrID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if taskInput.ID.String() == "00000000-0000-0000-0000-000000000000" {
 		taskInput.ID = fftypes.NewUUID()
@@ -502,9 +509,13 @@ func (dm *daiManager) TaskContract(ctx context.Context, location *fftypes.JSONAn
 	task.Task.Author = strings.ToLower(event.Output.GetString("author"))
 	switch task.Task.Status {
 	case TaskTryStart:
-		dm.mpcStart(ctx, task.Task)
+		if err := dm.mpcStart(ctx, task.Task); err != nil {
+			log.L(dm.ctx).Errorf("mpc start task %s error %v", task.Task.ID, err)
+		}
 	case TaskTryStop:
-		dm.mpcStop(ctx, task.Task)
+		if err := dm.mpcStop(ctx, task.Task); err != nil {
+			log.L(dm.ctx).Errorf("mpc stop task %s error %v", task.Task.ID, err)
+		}
 	}
 	return dm.database.UpsertTask(ctx, task.Task)
 }
@@ -547,6 +558,7 @@ func (dm *daiManager) syncTaskStatus(ctx context.Context) {
 		updated := false
 		status := task.Status
 		msgs := result.GetObjectArray("msg")
+		log.L(dm.ctx).Debugf("sync mpc task %v msg %v", task.ID, msgs)
 		for _, msg := range msgs {
 			switch msg.GetInt64("taskStatus") {
 			case MPCTaskInit, MPCTaskProcess:
@@ -562,6 +574,9 @@ func (dm *daiManager) syncTaskStatus(ctx context.Context) {
 				updated = true
 				status = TaskStopped
 			default:
+			}
+			if updated {
+				break
 			}
 		}
 		if updated {
@@ -746,10 +761,10 @@ func (dm *daiManager) mpcExecutor(ctx context.Context, executor *core.Executor) 
 		SetResult(&result).
 		SetContext(ctx).
 		SetBody(body).
-		Post("mpc/v1/getNodeByID")
+		Post("mpc/v1/NodeByUUID")
 	if err != nil || !res.IsSuccess() {
 		log.L(dm.ctx).Errorf("mpc get executor, url %v, id %v, error %v, res %v", url, executor.ID, err, res)
-		return nil, nil
+		return nil, err
 	}
 	log.L(dm.ctx).Infof("mpc get executor, url %v, id %v, result %v", url, executor.ID, result.String())
 	return result, nil
@@ -765,8 +780,8 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 	wsConfig := &wsclient.WSConfig{}
 	wsConfig.HTTPURL = url
 	wsConfig.WSKeyPath = "/mpc/v1/SubscribeTaskUpdate"
-	wsConfig.HeartbeatInterval = 10 * time.Millisecond
-	wsConfig.InitialConnectAttempts = 5
+	wsConfig.HeartbeatInterval = 1000 * time.Millisecond
+	wsConfig.InitialConnectAttempts = 10
 
 	wsc, err := wsclient.New(context.Background(), wsConfig, nil, nil)
 	if err != nil {
@@ -797,10 +812,11 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 					log.L(dm.ctx).Errorf("mpc executor ws exiting (receive channel closed). Terminating server!, id %v", id)
 					return
 				}
-				log.L(dm.ctx).Infof("mpc executor ws %v, =========== %v", id, string(msgBytes))
+				log.L(dm.ctx).Infof("mpc executor ws receive %v", id, string(msgBytes))
 				var msgs fftypes.JSONObjectArray
 				err := json.Unmarshal(msgBytes, &msgs)
 				if err != nil {
+					log.L(dm.ctx).Infof("mpc executor ws receive unmarshal error %v", id, err)
 					continue
 				}
 				for _, msg := range msgs {
@@ -818,8 +834,11 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 					default:
 					}
 					if TaskReady == taskStatus {
-						log.L(dm.ctx).Infof("mpc executor ws %v, update task %v status %v", id, taskID, taskStatus)
-						dm.updateTask(ctx, taskID, taskStatus, false)
+						if _, err := dm.updateTask(ctx, taskID, taskStatus, false); err != nil {
+							log.L(dm.ctx).Errorf("mpc executor ws %v, update task %v status %v, error, %v", id, taskID, taskStatus, err)
+						} else {
+							log.L(dm.ctx).Infof("mpc executor ws %v, update task %v status %v", id, taskID, taskStatus)
+						}
 					}
 				}
 			}

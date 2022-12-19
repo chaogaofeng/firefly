@@ -4,7 +4,7 @@ CREATE TABLE daitasks (
   id             UUID            NOT NULL,
   namespace      VARCHAR(64)     NOT NULL,
   name           VARCHAR(64)     NOT NULL,
-  desc           TEXT,
+  description           TEXT,
   requester      VARCHAR(1024),
   status         INTEGER,
   hosts          TEXT,
