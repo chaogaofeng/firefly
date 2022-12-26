@@ -10,8 +10,8 @@ import (
 )
 
 var getTasks = &ffapi.Route{
-	Name:            "getTasks",
-	Path:            "dai/tasks",
+	Name:            "ListTasks",
+	Path:            "dai/ListTasks",
 	Method:          http.MethodGet,
 	PathParams:      nil,
 	QueryParams:     nil,

@@ -429,6 +429,10 @@ func (dm *daiManager) updateTask(ctx context.Context, nameOrID string, status in
 	}
 	existing.Status = status
 
+	if existing.Status == TaskSuccess {
+		existing.Results, _ = dm.mpcTaskResult(ctx, existing)
+	}
+
 	var op *core.Operation
 	err = dm.database.RunAsGroup(ctx, func(ctx context.Context) (err error) {
 		txid, err := dm.txHelper.SubmitNewTransaction(ctx, core.TransactionTypeDaiTask, "")
@@ -736,13 +740,60 @@ func (dm *daiManager) mpcTask(ctx context.Context, task *core.Task) (fftypes.JSO
 			Post("/mpc/v1/getTaskByID")
 		if err != nil || !res.IsSuccess() {
 			log.L(dm.ctx).Errorf("mpc get task, url %v, taskID %v, error %v", url, task.ID, err)
-			return nil, nil
+			return nil, err
 		}
 		log.L(dm.ctx).Infof("mpc get task, url %v, taskID %v, result %v", url, task.ID, result.String())
 		return result, nil
 	}
 	return nil, nil
 }
+
+func (dm *daiManager) mpcTaskResult(ctx context.Context, task *core.Task) (*fftypes.JSONObjectArray, error) {
+	executors := map[string]*core.Executor{}
+	for _, host := range *task.Hosts {
+		id := host.GetString("NodeId")
+		executor, err := dm.GetExecutorByNameOrID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		if executor.Author != dm.defaultKey {
+			continue
+		}
+		executors[id] = executor
+	}
+	for _, executor := range executors {
+		var url string
+		if !strings.HasPrefix(executor.URL, "http") {
+			url = "http://" + executor.URL
+		} else {
+			url = executor.URL
+		}
+		client := resty.New().SetBaseURL(url)
+		body := map[string]interface{}{
+			"TaskID": task.ID,
+		}
+		var result fftypes.JSONObject
+		res, err := client.R().
+			SetResult(&result).
+			SetContext(ctx).
+			SetBody(body).
+			Post("/mpc/v1/getTaskResultByID")
+		if err != nil || !res.IsSuccess() {
+			log.L(dm.ctx).Errorf("mpc get task result, url %v, taskID %v, error %v", url, task.ID, err)
+			return nil, err
+		}
+		log.L(dm.ctx).Infof("mpc get task result, url %v, taskID %v, result %v", url, task.ID, result.String())
+
+		var ret fftypes.JSONObjectArray
+		if err := json.Unmarshal([]byte(result.GetString("results")), &ret); err != nil {
+			log.L(dm.ctx).Errorf("mpc get task result, url %v, taskID %v, error %v", url, task.ID, err)
+			return nil, err
+		}
+		return &ret, nil
+	}
+	return nil, nil
+}
+
 
 // 获取MPC节点信息
 func (dm *daiManager) mpcExecutor(ctx context.Context, executor *core.Executor) (fftypes.JSONObject, error) {

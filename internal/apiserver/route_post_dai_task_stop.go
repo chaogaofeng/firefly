@@ -10,8 +10,8 @@ import (
 )
 
 var postTaskStop = &ffapi.Route{
-	Name:       "postTaskStop",
-	Path:       "dai/stopTask",
+	Name:       "StopTask",
+	Path:       "dai/StopTask",
 	Method:     http.MethodPost,
 	PathParams: nil,
 	QueryParams: []*ffapi.QueryParam{

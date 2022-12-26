@@ -9,8 +9,8 @@ import (
 )
 
 var getExecutorByNameOrID = &ffapi.Route{
-	Name:   "getExecutorByNameOrID",
-	Path:   "dai/executors/{nameOrId}",
+	Name:   "GetMPCNodeByNameOrID",
+	Path:   "dai/GetMPCNodeByNameOrID/{nameOrId}",
 	Method: http.MethodGet,
 	PathParams: []*ffapi.PathParam{
 		{Name: "nameOrId", Description: coremsgs.APIParamsExecutorNameOrID},

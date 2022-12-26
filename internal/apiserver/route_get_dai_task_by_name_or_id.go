@@ -9,8 +9,8 @@ import (
 )
 
 var getTaskByNameOrID = &ffapi.Route{
-	Name:   "getTaskByNameOrID",
-	Path:   "dai/tasks/{nameOrId}",
+	Name:   "GetTaskByNameOrID",
+	Path:   "dai/GetTaskByNameOrID/{nameOrId}",
 	Method: http.MethodGet,
 	PathParams: []*ffapi.PathParam{
 		{Name: "nameOrId", Description: coremsgs.APIParamsTaskNameOrID},

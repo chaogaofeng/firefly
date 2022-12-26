@@ -10,8 +10,8 @@ import (
 )
 
 var postExecutor = &ffapi.Route{
-	Name:       "postExecutor",
-	Path:       "dai/executors",
+	Name:       "RegisterMPCNode",
+	Path:       "dai/RegisterMPCNode",
 	Method:     http.MethodPost,
 	PathParams: nil,
 	QueryParams: []*ffapi.QueryParam{

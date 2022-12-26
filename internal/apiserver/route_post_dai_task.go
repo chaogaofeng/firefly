@@ -10,8 +10,8 @@ import (
 )
 
 var postTask = &ffapi.Route{
-	Name:       "postTask",
-	Path:       "dai/tasks",
+	Name:       "ListTasks",
+	Path:       "dai/ListTasks",
 	Method:     http.MethodPost,
 	PathParams: nil,
 	QueryParams: []*ffapi.QueryParam{

@@ -10,8 +10,8 @@ import (
 )
 
 var getExecutors = &ffapi.Route{
-	Name:            "getExecutors",
-	Path:            "dai/executors",
+	Name:            "ListMPCNodes",
+	Path:            "dai/ListMPCNodes",
 	Method:          http.MethodGet,
 	PathParams:      nil,
 	QueryParams:     nil,
