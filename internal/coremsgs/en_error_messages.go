@@ -274,4 +274,7 @@ var (
 	MsgUnknownDaiPlugin                   = ffe("FF10433", "Unknown dai plugin: %s")
 	MsgDaiExecutorDuplicate               = ffe("FF10435", "Duplicate executor: %s", 409)
 	MsgDaiTaskDuplicate                   = ffe("FF10436", "Duplicate task: %s", 409)
+	MsgDaiExecutorNotFound                = ffe("FF10437", "executor: %s not found", 409)
+	MsgDaiTaskNotFound                    = ffe("FF10438", "task: %s not found", 409)
+	MsgDaiTaskInvalidOperation            = ffe("FF10439", "task: %s invalid operation", 409)
 )

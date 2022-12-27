@@ -2,6 +2,7 @@ package dai
 
 import (
 	"context"
+	"database/sql/driver"
 	"encoding/json"
 	"strings"
 	"sync"
@@ -129,16 +130,16 @@ func NewDaiManager(ctx context.Context, ns *core.Namespace, defaultKey string, k
 }
 
 func (dm *daiManager) init(ctx context.Context) error {
-	// 更新Started任务的状态
+	// 更新任务的状态
 	go dm.syncTaskStatus(ctx)
 	go func() {
-		timer := time.NewTicker(time.Minute)
+		timer := time.NewTicker(30 * time.Minute)
 		for {
 			select {
 			case <-timer.C:
 				// 更新节点状态
 				dm.syncExecutorStatus(ctx)
-				//// 更新Started任务的状态
+				// 更新任务的状态
 				dm.syncTaskStatus(ctx)
 			}
 		}
@@ -157,10 +158,16 @@ func (dm *daiManager) RegisterExecutor(ctx context.Context, executorInput *core.
 	if existing, err := dm.database.GetExecutor(ctx, dm.namespace.Name, executorInput.Name); err != nil {
 		return nil, err
 	} else if existing != nil {
-		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskDuplicate, executorInput.Name)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiExecutorDuplicate, executorInput.Name)
 	}
 	if executorInput.ID.String() == "00000000-0000-0000-0000-000000000000" {
 		executorInput.ID = fftypes.NewUUID()
+	} else {
+		if existing, err := dm.database.GetExecutorByID(ctx, dm.namespace.Name, executorInput.ID); err != nil {
+			return nil, err
+		} else if existing != nil {
+			return nil, i18n.NewError(ctx, coremsgs.MsgDaiExecutorDuplicate, executorInput.ID)
+		}
 	}
 	executorInput.Namespace = dm.namespace.Name
 	executorInput.Status = ExecutorNormal
@@ -193,6 +200,7 @@ func (dm *daiManager) RegisterExecutor(ctx context.Context, executorInput *core.
 		_, err := dm.operations.RunOperation(ctx, opExecutor(op, &executorInput.Executor))
 		return err
 	}
+
 	if waitConfirm {
 		_, err := dm.syncasync.WaitForInvokeOperation(ctx, op.ID, send)
 		return &executorInput.Executor, err
@@ -206,7 +214,7 @@ func (dm *daiManager) updateExecutor(ctx context.Context, nameOrID string, statu
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NotFound, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiExecutorNotFound, nameOrID)
 	}
 	existing.Status = status
 
@@ -263,7 +271,7 @@ func (dm *daiManager) GetExecutorByNameOrID(ctx context.Context, nameOrID string
 		return nil, err
 	}
 	if item == nil {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NotFound)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiExecutorNotFound, nameOrID)
 	}
 	return item, nil
 }
@@ -286,6 +294,12 @@ func (dm *daiManager) PublishTask(ctx context.Context, taskInput *core.TaskInput
 	}
 	if taskInput.ID.String() == "00000000-0000-0000-0000-000000000000" {
 		taskInput.ID = fftypes.NewUUID()
+	} else {
+		if existing, err := dm.database.GetTaskByID(ctx, dm.namespace.Name, taskInput.ID); err != nil {
+			return nil, err
+		} else if existing != nil {
+			return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskDuplicate, taskInput.ID)
+		}
 	}
 	taskInput.Namespace = dm.namespace.Name
 	taskInput.Status = TaskReady
@@ -329,10 +343,10 @@ func (dm *daiManager) StartTask(ctx context.Context, nameOrID string, waitConfir
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NotFound, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskNotFound, nameOrID)
 	}
 	if existing.Status != TaskReady && existing.Status != TaskTryStart {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NoResult, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskInvalidOperation, nameOrID)
 	}
 	existing.Status = TaskTryStart
 
@@ -378,10 +392,10 @@ func (dm *daiManager) StopTask(ctx context.Context, nameOrID string, waitConfirm
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NotFound, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskNotFound, nameOrID)
 	}
 	if existing.Status != TaskStarted && existing.Status != TaskTryStop {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NoResult, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskInvalidOperation, nameOrID)
 	}
 	existing.Status = TaskTryStop
 
@@ -425,7 +439,7 @@ func (dm *daiManager) updateTask(ctx context.Context, nameOrID string, status in
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
-		return nil, i18n.NewError(ctx, coremsgs.Msg404NotFound, nameOrID)
+		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskNotFound, nameOrID)
 	}
 	existing.Status = status
 
@@ -510,15 +524,18 @@ func (dm *daiManager) TaskContract(ctx context.Context, location *fftypes.JSONAn
 	if err := json.Unmarshal([]byte(s), &task); err != nil {
 		return i18n.WrapError(ctx, err, i18n.MsgJSONObjectParseFailed, s)
 	}
+
 	task.Task.Author = strings.ToLower(event.Output.GetString("author"))
 	switch task.Task.Status {
 	case TaskTryStart:
 		if err := dm.mpcStart(ctx, task.Task); err != nil {
 			log.L(dm.ctx).Errorf("mpc start task %s error %v", task.Task.ID, err)
+			// TODO
 		}
 	case TaskTryStop:
 		if err := dm.mpcStop(ctx, task.Task); err != nil {
 			log.L(dm.ctx).Errorf("mpc stop task %s error %v", task.Task.ID, err)
+			// TODO
 		}
 	}
 	return dm.database.UpsertTask(ctx, task.Task)
@@ -530,7 +547,7 @@ func (dm *daiManager) syncExecutorStatus(ctx context.Context) {
 	filter := database.ExecutorQueryFactory.NewFilter(ctx).Eq("author", dm.defaultKey)
 	executors, _, err := dm.database.GetExecutors(ctx, dm.namespace.Name, filter)
 	if err != nil {
-		log.L(dm.ctx).Errorf("sync mpc node status error %v", err)
+		log.L(dm.ctx).Errorf("sync mpc node status, error %v", err)
 	}
 	for _, executor := range executors {
 		status := ExecutorNormal
@@ -539,30 +556,32 @@ func (dm *daiManager) syncExecutorStatus(ctx context.Context) {
 		}
 		if status != executor.Status {
 			if _, err := dm.updateExecutor(ctx, executor.ID.String(), status, false); err != nil {
-				log.L(dm.ctx).Errorf("sync mpc node %v status error %v", executor.ID, err)
+				log.L(dm.ctx).Errorf("sync mpc node status, nodeID %v, error %v", executor.ID, err)
+			} else {
+				log.L(dm.ctx).Infof("sync mpc node status, nodeID %v update status %v", executor.ID, status)
 			}
-			log.L(dm.ctx).Infof("sync mpc node %v status %v", executor.ID, status)
 		}
 	}
 }
 
-// 更新任务状态
+// 更新任务状态 TaskTryStart、TaskStarted ->
 func (dm *daiManager) syncTaskStatus(ctx context.Context) {
 	log.L(dm.ctx).Infof("sync mpc task status ...")
-	filter := database.TaskQueryFactory.NewFilter(ctx).Eq("author", dm.defaultKey).Builder().Eq("taskstatus", TaskTryStart)
+	filter := database.TaskQueryFactory.NewFilter(ctx).Eq("author", dm.defaultKey).Builder().In("taskstatus", []driver.Value{TaskTryStart, TaskStarted})
 	tasks, _, err := dm.database.GetTasks(ctx, dm.namespace.Name, filter)
 	if err != nil {
-		log.L(dm.ctx).Errorf("sync mpc task status error %v", err)
+		log.L(dm.ctx).Errorf("sync mpc task status, error %v", err)
 	}
 	for _, task := range tasks {
 		result, err := dm.mpcTask(ctx, task)
 		if err != nil {
+			log.L(dm.ctx).Warningf("sync mpc task status, taskID %v error %v", task.ID, err)
 			continue
 		}
 		updated := false
 		status := task.Status
 		msgs := result.GetObjectArray("msg")
-		log.L(dm.ctx).Debugf("sync mpc task %v msg %v", task.ID, msgs)
+		log.L(dm.ctx).Debugf("sync mpc task status, taskID  %v msg %v", task.ID, msgs)
 		for _, msg := range msgs {
 			switch msg.GetInt64("taskStatus") {
 			case MPCTaskInit, MPCTaskProcess:
@@ -585,13 +604,12 @@ func (dm *daiManager) syncTaskStatus(ctx context.Context) {
 		}
 		if updated {
 			if status != task.Status {
-				if _, err := dm.updateTask(ctx, task.ID.String(), TaskStopped, false); err != nil {
-					log.L(dm.ctx).Errorf("sync mpc task %v status error %v", task.ID, err)
+				if _, err := dm.updateTask(ctx, task.ID.String(), status, false); err != nil {
+					log.L(dm.ctx).Errorf("sync mpc task status, taskID %v update error %v", task.ID, err)
 				} else {
-					log.L(dm.ctx).Infof("sync mpc task %v status  %v", task.ID, status)
+					log.L(dm.ctx).Infof("sync mpc task status, taskID %v, update status %v", task.ID, status)
 				}
 			}
-			continue
 		}
 	}
 }
@@ -794,7 +812,6 @@ func (dm *daiManager) mpcTaskResult(ctx context.Context, task *core.Task) (*ffty
 	return nil, nil
 }
 
-
 // 获取MPC节点信息
 func (dm *daiManager) mpcExecutor(ctx context.Context, executor *core.Executor) (fftypes.JSONObject, error) {
 	var url string
@@ -812,12 +829,12 @@ func (dm *daiManager) mpcExecutor(ctx context.Context, executor *core.Executor) 
 		SetResult(&result).
 		SetContext(ctx).
 		SetBody(body).
-		Post("mpc/v1/NodeByUUID")
+		Post("mpc/v1/getNodeByUUID")
 	if err != nil || !res.IsSuccess() {
-		log.L(dm.ctx).Errorf("mpc get executor, url %v, id %v, error %v, res %v", url, executor.ID, err, res)
+		log.L(dm.ctx).Errorf("mpc get executor node, url %v, nodeID %v, error %v, res %v", url, executor.ID, err, res)
 		return nil, err
 	}
-	log.L(dm.ctx).Infof("mpc get executor, url %v, id %v, result %v", url, executor.ID, result.String())
+	log.L(dm.ctx).Infof("mpc get executor node, url %v, nodeID %v, result %v", url, executor.ID, result.String())
 	return result, nil
 }
 
@@ -836,17 +853,18 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 
 	wsc, err := wsclient.New(context.Background(), wsConfig, nil, nil)
 	if err != nil {
-		log.L(dm.ctx).Errorf("add mpc executor ws, url %v, id %v, err %v", wsConfig.HTTPURL, executor.ID, err)
+		log.L(dm.ctx).Errorf("add mpc executor ws, url %v, nodeID %v, err %v", wsConfig.HTTPURL, executor.ID, err)
 		return
 	}
 	if err := wsc.Connect(); err != nil {
-		log.L(dm.ctx).Errorf("add mpc executor ws, url %v, id %v, err %v", wsConfig.HTTPURL, executor.ID, err)
+		log.L(dm.ctx).Errorf("add mpc executor ws, url %v, nodeID %v, err %v", wsConfig.HTTPURL, executor.ID, err)
 		return
 	}
 	log.L(dm.ctx).Infof("add mpc executor ws, url %v, id %v", wsConfig.HTTPURL, executor.ID)
 	go func(id string, wsc wsclient.WSClient) {
 		dm.executorsMutex.Lock()
 		if _, ok := dm.executors[executor.ID.String()]; ok {
+			// Already Exist
 			wsc.Close()
 			dm.executorsMutex.Unlock()
 			return
@@ -860,14 +878,14 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 					dm.executorsMutex.Lock()
 					delete(dm.executors, id)
 					dm.executorsMutex.Unlock()
-					log.L(dm.ctx).Errorf("mpc executor ws exiting (receive channel closed). Terminating server!, id %v", id)
+					log.L(dm.ctx).Errorf("mpc executor ws exiting (receive channel closed). Terminating server!, nodeID %v", id)
 					return
 				}
-				log.L(dm.ctx).Infof("mpc executor ws receive %v", id, string(msgBytes))
+				log.L(dm.ctx).Infof("mpc executor ws received %v", id, string(msgBytes))
 				var msgs fftypes.JSONObjectArray
 				err := json.Unmarshal(msgBytes, &msgs)
 				if err != nil {
-					log.L(dm.ctx).Infof("mpc executor ws receive unmarshal error %v", id, err)
+					log.L(dm.ctx).Errorf("mpc executor ws received unmarshal error %v", id, err)
 					continue
 				}
 				for _, msg := range msgs {
@@ -886,9 +904,9 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 					}
 					if TaskReady == taskStatus {
 						if _, err := dm.updateTask(ctx, taskID, taskStatus, false); err != nil {
-							log.L(dm.ctx).Errorf("mpc executor ws %v, update task %v status %v, error, %v", id, taskID, taskStatus, err)
+							log.L(dm.ctx).Errorf("mpc executor ws %v, update taskID %v status %v, error, %v", id, taskID, taskStatus, err)
 						} else {
-							log.L(dm.ctx).Infof("mpc executor ws %v, update task %v status %v", id, taskID, taskStatus)
+							log.L(dm.ctx).Infof("mpc executor ws %v, update taskID %v status %v", id, taskID, taskStatus)
 						}
 					}
 				}
