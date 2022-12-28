@@ -339,7 +339,7 @@ func (dm *daiManager) PublishTask(ctx context.Context, taskInput *core.TaskInput
 	return &taskInput.Task, send(ctx)
 }
 func (dm *daiManager) StartTask(ctx context.Context, nameOrID string, waitConfirm bool) (*core.Task, error) {
-	existing, err := dm.database.GetTask(ctx, dm.namespace.Name, nameOrID)
+	existing, err := dm.GetTaskByNameOrID(ctx, nameOrID)
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
@@ -388,7 +388,7 @@ func (dm *daiManager) ConfirmTask(ctx context.Context, nameOrID string, waitConf
 	return nil, nil
 }
 func (dm *daiManager) StopTask(ctx context.Context, nameOrID string, waitConfirm bool) (*core.Task, error) {
-	existing, err := dm.database.GetTask(ctx, dm.namespace.Name, nameOrID)
+	existing, err := dm.GetTaskByNameOrID(ctx, nameOrID)
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
