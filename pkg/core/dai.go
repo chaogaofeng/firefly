@@ -39,7 +39,7 @@ type Task struct {
 	Hosts           *fftypes.JSONObjectArray `ffstruct:"Task" json:"Hosts,omitempty"`
 	DataSets        *fftypes.JSONObjectArray `ffstruct:"Task" json:"DataSets,omitempty"`
 	Params          *fftypes.JSONObject      `ffstruct:"Task" json:"Params,omitempty"`
-	Results         *fftypes.JSONObjectArray `ffstruct:"Task" json:"Results,omitempty"`
+	Results         string                   `ffstruct:"Task" json:"Results,omitempty"`
 	Author          string                   `ffstruct:"Task" json:"author,omitempty" ffexcludeinput:"true"`
 	Message         *fftypes.UUID            `ffstruct:"Task" json:"message,omitempty" ffexcludeinput:"true"`
 	MessageHash     *fftypes.Bytes32         `ffstruct:"Task" json:"messageHash,omitempty" ffexcludeinput:"true"`

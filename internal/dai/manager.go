@@ -435,11 +435,14 @@ func (dm *daiManager) StopTask(ctx context.Context, nameOrID string, waitConfirm
 }
 
 func (dm *daiManager) updateTask(ctx context.Context, nameOrID string, status int, waitConfirm bool) (*core.Task, error) {
-	existing, err := dm.database.GetTask(ctx, dm.namespace.Name, nameOrID)
+	existing, err := dm.GetTaskByNameOrID(ctx, nameOrID)
 	if err != nil {
 		return nil, err
 	} else if existing == nil {
 		return nil, i18n.NewError(ctx, coremsgs.MsgDaiTaskNotFound, nameOrID)
+	}
+	if existing.Status == status {
+		return existing, nil
 	}
 	existing.Status = status
 
@@ -660,27 +663,29 @@ func (dm *daiManager) mpcStart(ctx context.Context, task *core.Task) error {
 	}
 
 	for _, executor := range executors {
-		var url string
-		if !strings.HasPrefix(executor.URL, "http") {
-			url = "http://" + executor.URL
-		} else {
-			url = executor.URL
-		}
-		client := resty.New().SetBaseURL(url)
-		body := map[string]interface{}{
-			"task": task,
-		}
-		var result fftypes.JSONObject
-		res, err := client.R().
-			SetContext(ctx).
-			SetResult(&result).
-			SetBody(body).
-			Post("/mpc/v1/startTask")
-		if err != nil || !res.IsSuccess() {
-			log.L(dm.ctx).Errorf("mpc start task, url %v, taskID %v, error %v, res %v", url, task.ID, err, res)
-			return nil
-		}
-		log.L(dm.ctx).Infof("mpc start task, url %v, taskID %v, result %v", url, task.ID, result.String())
+		go func(executor *core.Executor) {
+			var url string
+			if !strings.HasPrefix(executor.URL, "http") {
+				url = "http://" + executor.URL
+			} else {
+				url = executor.URL
+			}
+			client := resty.New().SetBaseURL(url)
+			body := map[string]interface{}{
+				"task": task,
+			}
+			var result fftypes.JSONObject
+			res, err := client.R().
+				SetContext(ctx).
+				SetResult(&result).
+				SetBody(body).
+				Post("/mpc/v1/startTask")
+			if err != nil || !res.IsSuccess() {
+				log.L(dm.ctx).Errorf("mpc start task, url %v, taskID %v, error %v, res %v", url, task.ID, err, res)
+				return
+			}
+			log.L(dm.ctx).Infof("mpc start task, url %v, taskID %v, result %v", url, task.ID, result.String())
+		}(executor)
 	}
 	return nil
 }
@@ -766,13 +771,13 @@ func (dm *daiManager) mpcTask(ctx context.Context, task *core.Task) (fftypes.JSO
 	return nil, nil
 }
 
-func (dm *daiManager) mpcTaskResult(ctx context.Context, task *core.Task) (*fftypes.JSONObjectArray, error) {
+func (dm *daiManager) mpcTaskResult(ctx context.Context, task *core.Task) (string, error) {
 	executors := map[string]*core.Executor{}
 	for _, host := range *task.Hosts {
 		id := host.GetString("NodeId")
 		executor, err := dm.GetExecutorByNameOrID(ctx, id)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		if executor.Author != dm.defaultKey {
 			continue
@@ -798,18 +803,19 @@ func (dm *daiManager) mpcTaskResult(ctx context.Context, task *core.Task) (*ffty
 			Post("/mpc/v1/getTaskResultByID")
 		if err != nil || !res.IsSuccess() {
 			log.L(dm.ctx).Errorf("mpc get task result, url %v, taskID %v, error %v", url, task.ID, err)
-			return nil, err
+			return "", err
 		}
 		log.L(dm.ctx).Infof("mpc get task result, url %v, taskID %v, result %v", url, task.ID, result.String())
 
-		var ret fftypes.JSONObjectArray
-		if err := json.Unmarshal([]byte(result.GetString("results")), &ret); err != nil {
-			log.L(dm.ctx).Errorf("mpc get task result, url %v, taskID %v, error %v", url, task.ID, err)
-			return nil, err
+		var ret []string
+		for _, msg := range result.GetObjectArray("msg") {
+			log.L(dm.ctx).Infof("mpc get task result, url %v, taskID %v, msg %v results %v", url, task.ID, msg, msg.GetString("results"))
+			ret = append(ret, msg.GetString("results"))
 		}
-		return &ret, nil
+
+		return strings.Join(ret, ","), nil
 	}
-	return nil, nil
+	return "", nil
 }
 
 // 获取MPC节点信息
@@ -881,15 +887,16 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 					log.L(dm.ctx).Errorf("mpc executor ws exiting (receive channel closed). Terminating server!, nodeID %v", id)
 					return
 				}
-				log.L(dm.ctx).Infof("mpc executor ws received %v", id, string(msgBytes))
+				log.L(dm.ctx).Infof("mpc executor ws received NodeID %v msg %v", id, string(msgBytes))
 				var msgs fftypes.JSONObjectArray
 				err := json.Unmarshal(msgBytes, &msgs)
 				if err != nil {
-					log.L(dm.ctx).Errorf("mpc executor ws received unmarshal error %v", id, err)
+					log.L(dm.ctx).Errorf("mpc executor ws received unmarshal NodeID %v error %v", id, err)
 					continue
 				}
 				for _, msg := range msgs {
 					taskID := msg.GetString("taskID")
+					log.L(dm.ctx).Infof("mpc executor ws received NodeID %v msg %v taskID %s taskStatus %d", id, msg, msg.GetString("taskID"), msg.GetInt64("taskStatus"))
 					taskStatus := TaskReady
 					switch msg.GetInt64("taskStatus") {
 					case MPCTaskInit, MPCTaskProcess:
@@ -902,12 +909,10 @@ func (dm *daiManager) wsConnect(ctx context.Context, executor *core.Executor) {
 						taskStatus = TaskStopped
 					default:
 					}
-					if TaskReady == taskStatus {
-						if _, err := dm.updateTask(ctx, taskID, taskStatus, false); err != nil {
-							log.L(dm.ctx).Errorf("mpc executor ws %v, update taskID %v status %v, error, %v", id, taskID, taskStatus, err)
-						} else {
-							log.L(dm.ctx).Infof("mpc executor ws %v, update taskID %v status %v", id, taskID, taskStatus)
-						}
+					if _, err := dm.updateTask(ctx, taskID, taskStatus, false); err != nil {
+						log.L(dm.ctx).Errorf("mpc executor ws %v, update taskID %v status %v, error, %v", id, taskID, taskStatus, err)
+					} else {
+						log.L(dm.ctx).Infof("mpc executor ws %v, update taskID %v status %v", id, taskID, taskStatus)
 					}
 				}
 			}
