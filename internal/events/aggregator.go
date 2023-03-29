@@ -21,6 +21,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
+	"github.com/hyperledger/firefly/internal/secretflow"
 	"strings"
 
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -51,6 +52,7 @@ type aggregator struct {
 	messaging    privatemessaging.Manager
 	definitions  definitions.Handler
 	identity     identity.Manager
+	secretFlow   secretflow.Manager
 	data         data.Manager
 	eventPoller  *eventPoller
 	verifierType core.VerifierType
@@ -89,7 +91,7 @@ func privatePinHash(topic string, group *fftypes.Bytes32, identity string, nonce
 	return fftypes.HashResult(h)
 }
 
-func newAggregator(ctx context.Context, ns string, di database.Plugin, bi blockchain.Plugin, pm privatemessaging.Manager, sh definitions.Handler, im identity.Manager, dm data.Manager, en *eventNotifier, mm metrics.Manager, cacheManager cache.Manager) (*aggregator, error) {
+func newAggregator(ctx context.Context, ns string, di database.Plugin, bi blockchain.Plugin, pm privatemessaging.Manager, sh definitions.Handler, im identity.Manager, dm data.Manager, en *eventNotifier, mm metrics.Manager, cacheManager cache.Manager, secretFlow secretflow.Manager) (*aggregator, error) {
 	batchSize := config.GetInt(coreconfig.EventAggregatorBatchSize)
 	ag := &aggregator{
 		ctx:          log.WithLogField(ctx, "role", "aggregator"),
@@ -101,6 +103,7 @@ func newAggregator(ctx context.Context, ns string, di database.Plugin, bi blockc
 		data:         dm,
 		verifierType: bi.VerifierType(),
 		metrics:      mm,
+		secretFlow:   secretFlow,
 	}
 
 	batchCache, err := cacheManager.GetCache(
@@ -593,6 +596,11 @@ func (ag *aggregator) attemptMessageDispatch(ctx context.Context, msg *core.Mess
 			if handlerResult.Action == definitions.ActionReject {
 				log.L(ctx).Warnf("Definition broadcast rejected: %s", err)
 			}
+
+			if handlerResult.Action == definitions.ActionConfirm && msg.Header.Tag == core.SystemTagDefineTrainingJob {
+				ag.secretFlow.TrainingJob(ctx, msg, data, tx)
+			}
+
 			customCorrelator = handlerResult.CustomCorrelator
 			valid = handlerResult.Action == definitions.ActionConfirm
 

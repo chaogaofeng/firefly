@@ -25,6 +25,7 @@ import (
 	"github.com/hyperledger/firefly/internal/dataexchange/dxfactory"
 	"github.com/hyperledger/firefly/internal/events/eifactory"
 	"github.com/hyperledger/firefly/internal/identity/iifactory"
+	"github.com/hyperledger/firefly/internal/secretflow/sffactory"
 	"github.com/hyperledger/firefly/internal/sharedstorage/ssfactory"
 	"github.com/hyperledger/firefly/internal/tokens/tifactory"
 	"github.com/hyperledger/firefly/pkg/core"
@@ -42,6 +43,7 @@ var (
 
 	blockchainConfig    = config.RootArray("plugins.blockchain")
 	tokensConfig        = config.RootArray("plugins.tokens")
+	secretflowConfig    = config.RootArray("plugins.secretflow")
 	databaseConfig      = config.RootArray("plugins.database")
 	sharedstorageConfig = config.RootArray("plugins.sharedstorage")
 	dataexchangeConfig  = config.RootArray("plugins.dataexchange")
@@ -88,6 +90,7 @@ func InitConfig() {
 	iifactory.InitConfig(identityConfig)
 	tifactory.InitConfigDeprecated(deprecatedTokensConfig)
 	tifactory.InitConfig(tokensConfig)
+	sffactory.InitConfig(secretflowConfig)
 	authfactory.InitConfigArray(authConfig)
 	eifactory.InitConfig(eventsConfig)
 }

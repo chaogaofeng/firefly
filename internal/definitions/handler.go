@@ -129,6 +129,17 @@ func (dh *definitionHandler) HandleDefinitionBroadcast(ctx context.Context, stat
 		return dh.handleFFIBroadcast(ctx, state, msg, data, tx)
 	case core.SystemTagDefineContractAPI:
 		return dh.handleContractAPIBroadcast(ctx, state, msg, data, tx)
+	case core.SystemTagDefineTrainingNode:
+		return dh.handleTrainingNodeBroadcast(ctx, state, msg, data, tx)
+	case core.SystemTagDefineTrainingNodeUpdate:
+		return dh.handleTrainingNodeUpdateBroadcast(ctx, state, msg, data, tx)
+	case core.SystemTagDefineTrainingModel:
+		return dh.handleTrainingModelBroadcast(ctx, state, msg, data, tx)
+	case core.SystemTagDefineTrainingTask:
+		return dh.handleTrainingTaskBroadcast(ctx, state, msg, data, tx)
+	case core.SystemTagDefineTrainingJob,
+		core.SystemTagDefineTrainingJobUpdate:
+		return dh.handleTrainingJobBroadcast(ctx, state, msg, data, tx)
 	default:
 		return HandlerResult{Action: ActionReject}, fmt.Errorf("unknown system tag '%s' for definition ID '%s'", msg.Header.Tag, msg.Header.ID)
 	}

@@ -43,6 +43,13 @@ type Sender interface {
 	DefineTokenPool(ctx context.Context, pool *core.TokenPoolAnnouncement, waitConfirm bool) error
 	DefineFFI(ctx context.Context, ffi *fftypes.FFI, waitConfirm bool) error
 	DefineContractAPI(ctx context.Context, httpServerURL string, api *core.ContractAPI, waitConfirm bool) error
+
+	DefineTrainingNode(ctx context.Context, node *core.TrainingNode, waitConfirm bool) error
+	UpdateTrainingNode(ctx context.Context, nameOrID string, node *core.TrainingNode, waitConfirm bool) error
+	DefineTrainingModel(ctx context.Context, model *core.TrainingModel, waitConfirm bool) error
+	DefineTrainingTask(ctx context.Context, task *core.TrainingTask, waitConfirm bool) error
+	DefineTrainingJob(ctx context.Context, task *core.TrainingJob, waitConfirm bool) error
+	DefineTrainingJobUpdate(ctx context.Context, task *core.TrainingJob, waitConfirm bool) error
 }
 
 type definitionSender struct {

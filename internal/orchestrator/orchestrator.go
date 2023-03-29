@@ -19,6 +19,8 @@ package orchestrator
 import (
 	"context"
 
+	"github.com/hyperledger/firefly/internal/secretflow"
+
 	"github.com/hyperledger/firefly-common/pkg/auth"
 	"github.com/hyperledger/firefly-common/pkg/ffapi"
 	"github.com/hyperledger/firefly-common/pkg/fftypes"
@@ -48,6 +50,7 @@ import (
 	"github.com/hyperledger/firefly/pkg/dataexchange"
 	eventsplugin "github.com/hyperledger/firefly/pkg/events"
 	idplugin "github.com/hyperledger/firefly/pkg/identity"
+	sfplugin "github.com/hyperledger/firefly/pkg/secretflow"
 	"github.com/hyperledger/firefly/pkg/sharedstorage"
 	"github.com/hyperledger/firefly/pkg/tokens"
 )
@@ -65,6 +68,7 @@ type Orchestrator interface {
 	Assets() assets.Manager
 	DefinitionSender() definitions.Sender
 	Contracts() contracts.Manager
+	SecretFlow() secretflow.Manager
 	Data() data.Manager
 	Events() events.EventManager
 	NetworkMap() networkmap.Manager
@@ -159,6 +163,11 @@ type IdentityPlugin struct {
 	Plugin idplugin.Plugin
 }
 
+type SecretFlowPlugin struct {
+	Name   string
+	Plugin sfplugin.Plugin
+}
+
 type AuthPlugin struct {
 	Name   string
 	Plugin auth.Plugin
@@ -171,6 +180,7 @@ type Plugins struct {
 	DataExchange  DataExchangePlugin
 	Database      DatabasePlugin
 	Tokens        []TokensPlugin
+	SecretFlow    []SecretFlowPlugin
 	Events        map[string]eventsplugin.Plugin
 	Auth          AuthPlugin
 }
@@ -208,6 +218,7 @@ type orchestrator struct {
 	cacheManager   cache.Manager
 	operations     operations.Manager
 	txHelper       txcommon.Helper
+	secretflow     secretflow.Manager
 }
 
 func NewOrchestrator(ns *core.Namespace, config Config, plugins *Plugins, metrics metrics.Manager, cacheManager cache.Manager) Orchestrator {
@@ -262,6 +273,14 @@ func (or *orchestrator) tokens() map[string]tokens.Plugin {
 	return result
 }
 
+func (or *orchestrator) secretflows() map[string]sfplugin.Plugin {
+	result := make(map[string]sfplugin.Plugin, len(or.plugins.Tokens))
+	for _, plugin := range or.plugins.SecretFlow {
+		result[plugin.Name] = plugin.Plugin
+	}
+	return result
+}
+
 func (or *orchestrator) Start() (err error) {
 	or.data.Start()
 	if or.config.Multiparty.Enabled {
@@ -278,6 +297,10 @@ func (or *orchestrator) Start() (err error) {
 	}
 	if err == nil {
 		err = or.operations.Start()
+	}
+
+	if err == nil {
+		err = or.secretflow.Start()
 	}
 
 	or.started = true
@@ -363,6 +386,10 @@ func (or *orchestrator) Identity() identity.Manager {
 	return or.identity
 }
 
+func (or *orchestrator) SecretFlow() secretflow.Manager {
+	return or.secretflow
+}
+
 func (or *orchestrator) initHandlers(ctx context.Context) (err error) {
 	or.plugins.Database.Plugin.SetHandler(or.namespace.Name, or)
 
@@ -396,6 +423,10 @@ func (or *orchestrator) initHandlers(ctx context.Context) (err error) {
 	for _, token := range or.plugins.Tokens {
 		token.Plugin.SetHandler(or.namespace.Name, or.events)
 		token.Plugin.SetOperationHandler(or.namespace.Name, &or.bc)
+	}
+
+	for _, sf := range or.plugins.SecretFlow {
+		sf.Plugin.SetHandler(or.namespace.Name, or.secretflow)
 	}
 
 	return nil
@@ -503,6 +534,13 @@ func (or *orchestrator) initManagers(ctx context.Context) (err error) {
 		}
 	}
 
+	if or.secretflow == nil {
+		or.secretflow, err = secretflow.NewManager(ctx, or.namespace.Name, or.config.KeyNormalization, or.database(), or.secretflows(), or.defsender, or.identity, or.syncasync, or.broadcast, or.messaging, or.metrics, or.operations, or.txHelper)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -519,7 +557,7 @@ func (or *orchestrator) initComponents(ctx context.Context) (err error) {
 	}
 
 	if or.events == nil {
-		or.events, err = events.NewEventManager(ctx, or.namespace, or.database(), or.blockchain(), or.identity, or.defhandler, or.data, or.defsender, or.broadcast, or.messaging, or.assets, or.sharedDownload, or.metrics, or.operations, or.txHelper, or.plugins.Events, or.multiparty, or.cacheManager)
+		or.events, err = events.NewEventManager(ctx, or.namespace, or.database(), or.blockchain(), or.identity, or.defhandler, or.data, or.defsender, or.broadcast, or.messaging, or.assets, or.sharedDownload, or.metrics, or.operations, or.txHelper, or.plugins.Events, or.multiparty, or.cacheManager, or.secretflow)
 		if err != nil {
 			return err
 		}

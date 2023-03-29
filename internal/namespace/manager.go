@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/hyperledger/firefly/pkg/secretflow"
+
 	"github.com/hyperledger/firefly-common/pkg/auth"
 	"github.com/hyperledger/firefly-common/pkg/auth/authfactory"
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -40,6 +42,7 @@ import (
 	"github.com/hyperledger/firefly/internal/metrics"
 	"github.com/hyperledger/firefly/internal/multiparty"
 	"github.com/hyperledger/firefly/internal/orchestrator"
+	"github.com/hyperledger/firefly/internal/secretflow/sffactory"
 	"github.com/hyperledger/firefly/internal/sharedstorage/ssfactory"
 	"github.com/hyperledger/firefly/internal/spievents"
 	"github.com/hyperledger/firefly/internal/tokens/tifactory"
@@ -102,6 +105,7 @@ type namespaceManager struct {
 	dataexchangeFactory  func(ctx context.Context, pluginType string) (dataexchange.Plugin, error)
 	sharedstorageFactory func(ctx context.Context, pluginType string) (sharedstorage.Plugin, error)
 	tokensFactory        func(ctx context.Context, pluginType string) (tokens.Plugin, error)
+	secretflowFactory    func(ctx context.Context, pluginType string) (secretflow.Plugin, error)
 	identityFactory      func(ctx context.Context, pluginType string) (identity.Plugin, error)
 	eventsFactory        func(ctx context.Context, pluginType string) (events.Plugin, error)
 	authFactory          func(ctx context.Context, pluginType string) (auth.Plugin, error)
@@ -115,6 +119,7 @@ const (
 	pluginCategoryDataexchange  pluginCategory = "dataexchange"
 	pluginCategorySharedstorage pluginCategory = "sharedstorage"
 	pluginCategoryTokens        pluginCategory = "tokens"
+	pluginCategorySecretFlow    pluginCategory = "secretflow"
 	pluginCategoryIdentity      pluginCategory = "identity"
 	pluginCategoryEvents        pluginCategory = "events"
 	pluginCategoryAuth          pluginCategory = "auth"
@@ -135,6 +140,7 @@ type plugin struct {
 	dataexchange  dataexchange.Plugin
 	sharedstorage sharedstorage.Plugin
 	tokens        tokens.Plugin
+	secretflow    secretflow.Plugin
 	identity      identity.Plugin
 	events        events.Plugin
 	auth          auth.Plugin
@@ -165,6 +171,7 @@ func NewNamespaceManager() Manager {
 		dataexchangeFactory:  dxfactory.GetPlugin,
 		sharedstorageFactory: ssfactory.GetPlugin,
 		tokensFactory:        tifactory.GetPlugin,
+		secretflowFactory:    sffactory.GetPlugin,
 		identityFactory:      iifactory.GetPlugin,
 		eventsFactory:        eifactory.GetPlugin,
 		authFactory:          authfactory.GetPlugin,
@@ -346,6 +353,10 @@ func (nm *namespaceManager) startNamespacesAndPlugins(namespacesToStart map[stri
 			if err := plugin.tokens.Start(); err != nil {
 				return err
 			}
+		case pluginCategorySecretFlow:
+			if err := plugin.secretflow.Start(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -426,6 +437,10 @@ func (nm *namespaceManager) loadPlugins(ctx context.Context, rawConfig fftypes.J
 		return nil, err
 	}
 
+	if err := nm.getSecretFlowsPlugins(ctx, newPlugins, rawConfig); err != nil {
+		return nil, err
+	}
+
 	if err := nm.getEventPlugins(ctx, newPlugins, rawConfig); err != nil {
 		return nil, err
 	}
@@ -500,6 +515,29 @@ func (nm *namespaceManager) getTokensPlugins(ctx context.Context, plugins map[st
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func (nm *namespaceManager) getSecretFlowsPlugins(ctx context.Context, plugins map[string]*plugin, rawConfig fftypes.JSONObject) (err error) {
+	secretflowConfigArraySize := secretflowConfig.ArraySize()
+	rawPluginSecretFlowConfig := rawConfig.GetObject("plugins").GetObjectArray("secretflow")
+	if len(rawPluginSecretFlowConfig) != secretflowConfigArraySize {
+		log.L(ctx).Errorf("Expected len(%d) for plugins.tokens: %s", secretflowConfigArraySize, rawPluginSecretFlowConfig)
+		return i18n.NewError(ctx, coremsgs.MsgConfigArrayVsRawConfigMismatch)
+	}
+	for i := 0; i < secretflowConfigArraySize; i++ {
+		config := secretflowConfig.ArrayEntry(i)
+		pc, err := nm.validatePluginConfig(ctx, plugins, pluginCategorySecretFlow, config, rawPluginSecretFlowConfig[i])
+		if err != nil {
+			return err
+		}
+
+		pc.secretflow, err = nm.secretflowFactory(ctx, pc.pluginType)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -737,6 +775,10 @@ func (nm *namespaceManager) initPlugins(pluginsToStart map[string]*plugin) (err 
 			if err = p.tokens.Init(p.ctx, nm.cancelCtx /* allow plugin to stop whole process */, name, p.config); err != nil {
 				return err
 			}
+		case pluginCategorySecretFlow:
+			if err = p.secretflow.Init(p.ctx, nm.cancelCtx /* allow plugin to stop whole process */, name, p.config); err != nil {
+				return err
+			}
 		case pluginCategoryEvents:
 			if err = p.events.Init(p.ctx, p.config); err != nil {
 				return err
@@ -861,6 +903,7 @@ func (nm *namespaceManager) loadNamespace(ctx context.Context, name string, inde
 				pluginCategoryIdentity,
 				pluginCategorySharedstorage,
 				pluginCategoryTokens,
+				pluginCategorySecretFlow,
 				pluginCategoryAuth:
 				pluginNames = append(pluginNames, pluginName)
 			}
@@ -976,6 +1019,11 @@ func (nm *namespaceManager) validateNSPlugins(ctx context.Context, ns *namespace
 			result.Tokens = append(result.Tokens, orchestrator.TokensPlugin{
 				Name:   pluginName,
 				Plugin: p.tokens,
+			})
+		case pluginCategorySecretFlow:
+			result.SecretFlow = append(result.SecretFlow, orchestrator.SecretFlowPlugin{
+				Name:   pluginName,
+				Plugin: p.secretflow,
 			})
 		case pluginCategoryIdentity:
 			if result.Identity.Plugin != nil {

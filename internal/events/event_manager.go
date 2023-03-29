@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/hyperledger/firefly/internal/secretflow"
 	"strconv"
 
 	"github.com/hyperledger/firefly-common/pkg/config"
@@ -115,7 +116,7 @@ type eventManager struct {
 	multiparty         multiparty.Manager // optional
 }
 
-func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin, bi blockchain.Plugin, im identity.Manager, dh definitions.Handler, dm data.Manager, ds definitions.Sender, bm broadcast.Manager, pm privatemessaging.Manager, am assets.Manager, sd shareddownload.Manager, mm metrics.Manager, om operations.Manager, txHelper txcommon.Helper, transports map[string]events.Plugin, mp multiparty.Manager, cacheManager cache.Manager) (EventManager, error) {
+func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin, bi blockchain.Plugin, im identity.Manager, dh definitions.Handler, dm data.Manager, ds definitions.Sender, bm broadcast.Manager, pm privatemessaging.Manager, am assets.Manager, sd shareddownload.Manager, mm metrics.Manager, om operations.Manager, txHelper txcommon.Helper, transports map[string]events.Plugin, mp multiparty.Manager, cacheManager cache.Manager, secretFlow secretflow.Manager) (EventManager, error) {
 	if di == nil || im == nil || dh == nil || dm == nil || om == nil || ds == nil || am == nil {
 		return nil, i18n.NewError(ctx, coremsgs.MsgInitializationNilDepError, "EventManager")
 	}
@@ -162,7 +163,7 @@ func NewEventManager(ctx context.Context, ns *core.Namespace, di database.Plugin
 	ie, _ := eifactory.GetPlugin(ctx, system.SystemEventsTransport)
 	em.internalEvents = ie.(*system.Events)
 	if bi != nil {
-		aggregator, err := newAggregator(ctx, ns.Name, di, bi, pm, dh, im, dm, newPinNotifier, mm, cacheManager)
+		aggregator, err := newAggregator(ctx, ns.Name, di, bi, pm, dh, im, dm, newPinNotifier, mm, cacheManager, secretFlow)
 		if err != nil {
 			return nil, err
 		}

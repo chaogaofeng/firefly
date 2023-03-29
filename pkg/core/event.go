@@ -61,6 +61,16 @@ var (
 	EventTypeBlockchainContractDeployOpSucceeded = fftypes.FFEnumValue("eventtype", "blockchain_contract_deploy_op_succeeded")
 	// EventTypeBlockchainContractDeployOpFailed occurs when a contract deployment request has failed
 	EventTypeBlockchainContractDeployOpFailed = fftypes.FFEnumValue("eventtype", "blockchain_contract_deploy_op_failed")
+	// EventTypeTrainingNodeConfirmed occurs when a new trainingnode is ready for use (on the namespace of the trainingnode)
+	EventTypeTrainingNodeConfirmed = fftypes.FFEnumValue("eventtype", "trainingnode_confirmed")
+	// EventTypeTrainingNodeUpdated occurs when an existing training node is update by the owner
+	EventTypeTrainingNodeUpdated = fftypes.FFEnumValue("eventtype", "trainingnode_updated")
+	// EventTypeTrainingModelConfirmed occurs when a new trainingmodel is ready for use (on the namespace of the trainingmodel)
+	EventTypeTrainingModelConfirmed = fftypes.FFEnumValue("eventtype", "trainingmodel_confirmed")
+	// EventTypeTrainingTaskConfirmed occurs when a new trainingtask is ready for use (on the namespace of the trainingtask)
+	EventTypeTrainingTaskConfirmed = fftypes.FFEnumValue("eventtype", "trainingtask_confirmed")
+	// EventTypeTrainingJobConfirmed occurs when a new trainingtask is ready for use (on the namespace of the trainingtask)
+	EventTypeTrainingJobConfirmed = fftypes.FFEnumValue("eventtype", "trainingtask_execution_confirmed")
 )
 
 // Event is an activity in the system, delivered reliably to applications, that indicates something has happened in the network

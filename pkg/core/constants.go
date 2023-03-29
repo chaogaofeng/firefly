@@ -60,4 +60,22 @@ const (
 
 	// SystemTagIdentityUpdate is the tag for messages that broadcast an identity update
 	SystemTagIdentityUpdate = "ff_identity_update"
+
+	// SystemTagDefineTrainingNode is the tag for messages that broadcast training node
+	SystemTagDefineTrainingNode = "ff_define_training_node"
+
+	// SystemTagDefineTrainingNodeUpdate is the tag for messages that broadcast an training update
+	SystemTagDefineTrainingNodeUpdate = "ff_define_training_node_update"
+
+	// SystemTagDefineTrainingModel is the tag for messages that broadcast training model
+	SystemTagDefineTrainingModel = "ff_define_training_model"
+
+	// SystemTagDefineTrainingTask is the tag for messages that broadcast training task
+	SystemTagDefineTrainingTask = "ff_define_training_task"
+
+	// SystemTagDefineTrainingJob is the tag for messages that broadcast training job
+	SystemTagDefineTrainingJob = "ff_define_training_task_job"
+
+	// SystemTagDefineTrainingJobUpdate is the tag for messages that broadcast training job
+	SystemTagDefineTrainingJobUpdate = "ff_define_training_task_job_update"
 )

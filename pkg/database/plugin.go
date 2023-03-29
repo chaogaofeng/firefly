@@ -508,6 +508,62 @@ type iChartCollection interface {
 	GetChartHistogram(ctx context.Context, namespace string, intervals []core.ChartHistogramInterval, collection CollectionName) ([]*core.ChartHistogram, error)
 }
 
+type iTrainingNodeCollection interface {
+	// UpsertTrainingNode - Upsert a training node definition
+	UpsertTrainingNode(ctx context.Context, item *core.TrainingNode, allowExisting bool) (err error)
+
+	// GetTrainingNodeByID - Get a training node definition by ID
+	GetTrainingNodeByID(ctx context.Context, namespace string, id *fftypes.UUID) (item *core.TrainingNode, err error)
+
+	// GetTrainingNodeByName - Get a training node definition by name
+	GetTrainingNodeByName(ctx context.Context, namespace, name string) (item *core.TrainingNode, err error)
+
+	// GetTrainingNodes - Get training node definitions
+	GetTrainingNodes(ctx context.Context, namespace string, filter ffapi.Filter) (items []*core.TrainingNode, res *ffapi.FilterResult, err error)
+}
+
+type iTrainingModelCollection interface {
+	// UpsertTrainingModel - Upsert a training model definition
+	UpsertTrainingModel(ctx context.Context, item *core.TrainingModel, allowExisting bool) (err error)
+
+	// GetTrainingModelByID - Get a training model definition by ID
+	GetTrainingModelByID(ctx context.Context, namespace string, id *fftypes.UUID) (item *core.TrainingModel, err error)
+
+	// GetTrainingModelByName - Get a training model definition by name
+	GetTrainingModelByName(ctx context.Context, namespace, name string) (item *core.TrainingModel, err error)
+
+	// GetTrainingModels - Get training model definitions
+	GetTrainingModels(ctx context.Context, namespace string, filter ffapi.Filter) (items []*core.TrainingModel, res *ffapi.FilterResult, err error)
+}
+
+type iTrainingTaskCollection interface {
+	// UpsertTrainingTask - Upsert a training task definition
+	UpsertTrainingTask(ctx context.Context, item *core.TrainingTask, allowExisting bool) (err error)
+
+	// GetTrainingTaskByID - Get a training task definition by ID
+	GetTrainingTaskByID(ctx context.Context, namespace string, id *fftypes.UUID) (item *core.TrainingTask, err error)
+
+	// GetTrainingTaskByName - Get a training task definition by name
+	GetTrainingTaskByName(ctx context.Context, namespace, name string) (item *core.TrainingTask, err error)
+
+	// GetTrainingTasks - Get training task definitions
+	GetTrainingTasks(ctx context.Context, namespace string, filter ffapi.Filter) (items []*core.TrainingTask, res *ffapi.FilterResult, err error)
+}
+
+type iTrainingJobCollection interface {
+	// UpsertTrainingJob - Upsert a training job definition
+	UpsertTrainingJob(ctx context.Context, item *core.TrainingJob, allowExisting bool) (err error)
+
+	// GetTrainingJobByID - Get a training job definition by ID
+	GetTrainingJobByID(ctx context.Context, namespace string, id *fftypes.UUID) (item *core.TrainingJob, err error)
+
+	// GetTrainingJobByName - Get a training task definition by name
+	GetTrainingJobByName(ctx context.Context, namespace, name string) (item *core.TrainingJob, err error)
+
+	// GetTrainingJobs - Get training job definitions
+	GetTrainingJobs(ctx context.Context, namespace string, filter ffapi.Filter) (items []*core.TrainingJob, res *ffapi.FilterResult, err error)
+}
+
 // PeristenceInterface are the operations that must be implemented by a database interface plugin.
 // The database mechanism of Firefly is designed to provide the balance between being able
 // to query the data a member of the network has transferred/received via Firefly efficiently,
@@ -571,6 +627,10 @@ type PersistenceInterface interface {
 	iContractListenerCollection
 	iBlockchainEventCollection
 	iChartCollection
+	iTrainingNodeCollection
+	iTrainingModelCollection
+	iTrainingTaskCollection
+	iTrainingJobCollection
 }
 
 // CollectionName represents all collections
@@ -617,6 +677,10 @@ const (
 	CollectionContractAPIs      UUIDCollectionNS = "contractapis"
 	CollectionContractListeners UUIDCollectionNS = "contractlisteners"
 	CollectionIdentities        UUIDCollectionNS = "identities"
+	CollectionTrainingNodes     UUIDCollectionNS = "trainingnodes"
+	CollectionTrainingModels    UUIDCollectionNS = "trainingmodels"
+	CollectionTrainingTasks     UUIDCollectionNS = "trainingtasks"
+	CollectionTrainingJobs      UUIDCollectionNS = "trainingtask_exections"
 )
 
 // HashCollectionNS is a collection where the primary key is a hash, such that it can
@@ -1011,4 +1075,35 @@ var ContractAPIQueryFactory = &ffapi.QueryFields{
 	"id":        &ffapi.UUIDField{},
 	"name":      &ffapi.StringField{},
 	"interface": &ffapi.UUIDField{},
+}
+
+var TrainingNodeQueryFactory = &ffapi.QueryFields{
+	"id":      &ffapi.UUIDField{},
+	"message": &ffapi.UUIDField{},
+	"name":    &ffapi.StringField{},
+	"parent":  &ffapi.StringField{},
+	"head":    &ffapi.StringField{},
+	"address": &ffapi.StringField{},
+}
+
+var TrainingModelQueryFactory = &ffapi.QueryFields{
+	"id":       &ffapi.UUIDField{},
+	"message":  &ffapi.UUIDField{},
+	"flowId":   &ffapi.StringField{},
+	"flowName": &ffapi.StringField{},
+}
+
+var TrainingTaskQueryFactory = &ffapi.QueryFields{
+	"id":      &ffapi.UUIDField{},
+	"message": &ffapi.UUIDField{},
+	"name":    &ffapi.StringField{},
+}
+
+var TrainingJobQueryFactory = &ffapi.QueryFields{
+	"id":      &ffapi.UUIDField{},
+	"message": &ffapi.UUIDField{},
+	"task":    &ffapi.UUIDField{},
+	"status":  &ffapi.StringField{},
+	"created": &ffapi.TimeField{},
+	"updated": &ffapi.TimeField{},
 }

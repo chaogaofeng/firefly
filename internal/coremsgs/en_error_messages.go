@@ -278,4 +278,7 @@ var (
 	MsgMissingNamespace                   = ffe("FF10437", "Missing namespace in request", 400)
 	MsgDeprecatedResetWithAutoReload      = ffe("FF10438", "The deprecated reset API cannot be used when dynamic config reload is enabled", 409)
 	MsgConfigArrayVsRawConfigMismatch     = ffe("FF10439", "Error processing configuration - mismatch between raw and processed array lengths")
+	MsgUnknownSecretFlowsPlugin           = ffe("FF10800", "Unknown secretflow plugin '%s'", 400)
+	MsgSFRESTErr                          = ffe("FF10801", "Error from secretflow service: %s")
+	MsgDefRejectedTrainingNodeNotFound    = ffe("FF10802", "Rejected %s '%s' - training node not found: %s")
 )

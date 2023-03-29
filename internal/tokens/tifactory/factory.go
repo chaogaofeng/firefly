@@ -52,7 +52,7 @@ func InitConfigDeprecated(config config.ArraySection) {
 func GetPlugin(ctx context.Context, connectorName string) (tokens.Plugin, error) {
 	plugin, ok := pluginsByName[connectorName]
 	if !ok {
-		return nil, i18n.NewError(ctx, coremsgs.MsgUnknownTokensPlugin, connectorName)
+		return nil, i18n.NewError(ctx, coremsgs.MsgUnknownSecretFlowsPlugin, connectorName)
 	}
 	return plugin(), nil
 }
