@@ -53,7 +53,7 @@ INSERT INTO orgs (
   FROM identities as i
   LEFT JOIN verifiers v ON v.hash = REPLACE(i.id,'-','') || REPLACE(i.id,'-','')
   LEFT JOIN verifiers pv ON pv.hash = REPLACE(i.parent,'-','') || REPLACE(i.parent,'-','')
-  WHERE i.did LIKE 'did:firefly:org/%' AND v.hash IS NOT NULL;
+  WHERE i.did LIKE 'did:gdc:org/%' AND v.hash IS NOT NULL;
 
 -- We only reconstitute nodes that were dropped during the original up migration.
 -- These have the Hash of the verifier set to the bytes from the UUID of the node (by taking the string and removing the dashes).
@@ -78,7 +78,7 @@ INSERT INTO nodes (
   FROM identities as i
   LEFT JOIN verifiers v ON v.hash = REPLACE(i.id,'-','') || REPLACE(i.id,'-','')
   LEFT JOIN verifiers pv ON pv.hash = REPLACE(i.parent,'-','') || REPLACE(i.parent,'-','')
-  WHERE i.did LIKE 'did:firefly:node/%' AND v.hash IS NOT NULL;
+  WHERE i.did LIKE 'did:gdc:node/%' AND v.hash IS NOT NULL;
 
 DROP INDEX identities_id;
 DROP INDEX identities_did;

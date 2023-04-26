@@ -29,7 +29,7 @@ to resolve these DIDs.
 
 So an example FireFly DID for organization `abcd1234` is:
 
-- `did:firefly:org/abcd1234`
+- `did:gdc:org/abcd1234`
 
 > The adoption of DIDs in Hyperledger FireFly v1.0 is also a stepping stone
 > to allowing pluggable DID based identity resolvers into FireFly in the future.

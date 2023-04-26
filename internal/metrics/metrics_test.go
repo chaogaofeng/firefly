@@ -34,7 +34,7 @@ var Message = &core.Message{
 	Header: core.MessageHeader{
 		ID: msgID,
 		SignerRef: core.SignerRef{
-			Author: "did:firefly:org/abcd",
+			Author: "did:gdc:org/abcd",
 			Key:    "0x12345",
 		},
 		Type: "",

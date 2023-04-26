@@ -309,17 +309,17 @@ func TestGetVerifierByHashBadUUID(t *testing.T) {
 func TestGetVerifierByDIDOk(t *testing.T) {
 	nm, cancel := newTestNetworkmap(t)
 	defer cancel()
-	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/abc").
+	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/abc").
 		Return(testOrg("abc"), true, nil)
-	id, err := nm.GetIdentityByDID(nm.ctx, "did:firefly:org/abc")
+	id, err := nm.GetIdentityByDID(nm.ctx, "did:gdc:org/abc")
 	assert.NoError(t, err)
-	assert.Equal(t, "did:firefly:org/abc", id.DID)
+	assert.Equal(t, "did:gdc:org/abc", id.DID)
 }
 
 func TestGetVerifierByDIDWithVerifiersOk(t *testing.T) {
 	nm, cancel := newTestNetworkmap(t)
 	defer cancel()
-	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/abc").
+	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/abc").
 		Return(testOrg("abc"), true, nil)
 	nm.database.(*databasemocks.Plugin).On("GetVerifiers", nm.ctx, "ns1", mock.Anything).Return([]*core.Verifier{
 		{Hash: fftypes.NewRandB32(), VerifierRef: core.VerifierRef{
@@ -327,27 +327,27 @@ func TestGetVerifierByDIDWithVerifiersOk(t *testing.T) {
 			Value: "0x12345",
 		}},
 	}, nil, nil)
-	id, err := nm.GetIdentityByDIDWithVerifiers(nm.ctx, "did:firefly:org/abc")
+	id, err := nm.GetIdentityByDIDWithVerifiers(nm.ctx, "did:gdc:org/abc")
 	assert.NoError(t, err)
-	assert.Equal(t, "did:firefly:org/abc", id.DID)
+	assert.Equal(t, "did:gdc:org/abc", id.DID)
 	assert.Equal(t, "0x12345", id.Verifiers[0].Value)
 }
 
 func TestGetVerifierByDIDWithVerifiersError(t *testing.T) {
 	nm, cancel := newTestNetworkmap(t)
 	defer cancel()
-	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/abc").
+	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/abc").
 		Return(nil, true, fmt.Errorf("pop"))
-	_, err := nm.GetIdentityByDIDWithVerifiers(nm.ctx, "did:firefly:org/abc")
+	_, err := nm.GetIdentityByDIDWithVerifiers(nm.ctx, "did:gdc:org/abc")
 	assert.Regexp(t, "pop", err)
 }
 
 func TestGetVerifierByDIDNotErr(t *testing.T) {
 	nm, cancel := newTestNetworkmap(t)
 	defer cancel()
-	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/abc").
+	nm.identity.(*identitymanagermocks.Manager).On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/abc").
 		Return(nil, true, fmt.Errorf("pop"))
-	id, err := nm.GetIdentityByDID(nm.ctx, "did:firefly:org/abc")
+	id, err := nm.GetIdentityByDID(nm.ctx, "did:gdc:org/abc")
 	assert.Regexp(t, "pop", err)
 	assert.Nil(t, id)
 }

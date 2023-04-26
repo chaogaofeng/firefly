@@ -53,7 +53,7 @@ func TestUpsertE2EWithDB(t *testing.T) {
 			Type: core.MessageTypeBroadcast,
 			SignerRef: core.SignerRef{
 				Key:    "0x12345",
-				Author: "did:firefly:org/abcd",
+				Author: "did:gdc:org/abcd",
 			},
 			Created:   fftypes.Now(),
 			Namespace: "ns12345",
@@ -100,7 +100,7 @@ func TestUpsertE2EWithDB(t *testing.T) {
 			Type: core.MessageTypeBroadcast,
 			SignerRef: core.SignerRef{
 				Key:    "0x12345",
-				Author: "did:firefly:org/abcd",
+				Author: "did:gdc:org/abcd",
 			},
 			Created:   fftypes.Now(),
 			Namespace: "ns12345",

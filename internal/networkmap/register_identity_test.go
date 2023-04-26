@@ -125,10 +125,10 @@ func TestRegisterIdentityOrgNonMultiparty(t *testing.T) {
 
 	mim := nm.identity.(*identitymanagermocks.Manager)
 	mim.On("VerifyIdentityChain", nm.ctx, mock.AnythingOfType("*core.Identity")).Return(parentIdentity, false, nil)
-	mim.On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/parent1").Return(&core.Identity{
+	mim.On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/parent1").Return(&core.Identity{
 		IdentityBase: core.IdentityBase{
 			ID:  fftypes.NewUUID(),
-			DID: "did:firefly:org/parent1",
+			DID: "did:gdc:org/parent1",
 		},
 	}, false, nil)
 
@@ -144,7 +144,7 @@ func TestRegisterIdentityOrgNonMultiparty(t *testing.T) {
 	_, err := nm.RegisterIdentity(nm.ctx, &core.IdentityCreateDTO{
 		Name:   "custom1",
 		Key:    "0x12345",
-		Parent: "did:firefly:org/parent1",
+		Parent: "did:gdc:org/parent1",
 	}, false)
 	assert.Regexp(t, "pop", err)
 
@@ -250,11 +250,11 @@ func TestRegisterIdentityBadParent(t *testing.T) {
 	defer cancel()
 
 	mim := nm.identity.(*identitymanagermocks.Manager)
-	mim.On("CachedIdentityLookupMustExist", nm.ctx, "did:firefly:org/1").Return(nil, false, fmt.Errorf("pop"))
+	mim.On("CachedIdentityLookupMustExist", nm.ctx, "did:gdc:org/1").Return(nil, false, fmt.Errorf("pop"))
 
 	_, err := nm.RegisterIdentity(nm.ctx, &core.IdentityCreateDTO{
 		Name:   "custom1",
-		Parent: "did:firefly:org/1",
+		Parent: "did:gdc:org/1",
 	}, false)
 	assert.Regexp(t, "pop", err)
 

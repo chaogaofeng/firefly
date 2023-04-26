@@ -90,7 +90,7 @@ func TestGetStatusRegistered(t *testing.T) {
 			ID:        orgID,
 			Name:      "org1",
 			Namespace: "ns",
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 		},
 	}, nil)
 	or.mim.On("GetLocalNode", or.ctx).Return(&core.Identity{
@@ -119,7 +119,7 @@ func TestGetStatusRegistered(t *testing.T) {
 
 	assert.Equal(t, "org1", status.Org.Name)
 	assert.True(t, status.Org.Registered)
-	assert.Equal(t, "did:firefly:org/org1", status.Org.DID)
+	assert.Equal(t, "did:gdc:org/org1", status.Org.DID)
 
 	assert.Equal(t, *orgID, *status.Org.ID)
 	assert.Equal(t, "node1", status.Node.Name)
@@ -151,7 +151,7 @@ func TestGetStatusVerifierLookupFail(t *testing.T) {
 			ID:        orgID,
 			Name:      "org1",
 			Namespace: "ns",
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 		},
 	}, nil)
 	or.mdi.On("GetVerifiers", or.ctx, "ns", mock.Anything).Return(nil, nil, fmt.Errorf("pop"))
@@ -178,7 +178,7 @@ func TestGetStatusWrongNodeOwner(t *testing.T) {
 			ID:        orgID,
 			Name:      "org1",
 			Namespace: "ns",
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 		},
 	}, nil)
 	or.mim.On("GetLocalNode", or.ctx).Return(&core.Identity{
@@ -207,7 +207,7 @@ func TestGetStatusWrongNodeOwner(t *testing.T) {
 
 	assert.Equal(t, "org1", status.Org.Name)
 	assert.True(t, status.Org.Registered)
-	assert.Equal(t, "did:firefly:org/org1", status.Org.DID)
+	assert.Equal(t, "did:gdc:org/org1", status.Org.DID)
 
 	assert.Equal(t, *orgID, *status.Org.ID)
 	assert.Equal(t, "node1", status.Node.Name)
@@ -257,7 +257,7 @@ func TestGetStatusOrgOnlyRegistered(t *testing.T) {
 			ID:        orgID,
 			Name:      "org1",
 			Namespace: "ns",
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 		},
 	}, nil)
 	or.mim.On("GetLocalNode", or.ctx).Return(nil, nil)
@@ -280,7 +280,7 @@ func TestGetStatusOrgOnlyRegistered(t *testing.T) {
 
 	assert.Equal(t, "org1", status.Org.Name)
 	assert.True(t, status.Org.Registered)
-	assert.Equal(t, "did:firefly:org/org1", status.Org.DID)
+	assert.Equal(t, "did:gdc:org/org1", status.Org.DID)
 	assert.Equal(t, *orgID, *status.Org.ID)
 
 	assert.Equal(t, "node1", status.Node.Name)
@@ -309,7 +309,7 @@ func TestGetStatusNodeError(t *testing.T) {
 			ID:        orgID,
 			Name:      "org1",
 			Namespace: "ns",
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 		},
 	}, nil)
 	or.mim.On("GetLocalNode", or.ctx).Return(nil, fmt.Errorf("pop"))

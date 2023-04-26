@@ -29,7 +29,7 @@ nav_order: 16
         "cid": "00d20cba-76ed-431d-b9ff-f04b4cbee55c",
         "type": "private",
         "txtype": "batch_pin",
-        "author": "did:firefly:org/acme",
+        "author": "did:gdc:org/acme",
         "key": "0xD53B0294B6a596D404809b1d51D1b4B3d1aD4945",
         "created": "2022-05-16T01:23:10Z",
         "namespace": "ns1",

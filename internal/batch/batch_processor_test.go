@@ -48,7 +48,7 @@ func newTestBatchProcessor(t *testing.T, dispatch DispatchHandler) (func(), *dat
 	txHelper, _ := txcommon.NewTransactionHelper(ctx, "ns1", mdi, mdm, cmi)
 	bp := newBatchProcessor(bm, &batchProcessorConf{
 		txType:   core.TransactionTypeBatchPin,
-		signer:   core.SignerRef{Author: "did:firefly:org/abcd", Key: "0x12345"},
+		signer:   core.SignerRef{Author: "did:gdc:org/abcd", Key: "0x12345"},
 		dispatch: dispatch,
 		DispatcherOptions: DispatcherOptions{
 			BatchMaxSize:   10,
@@ -571,7 +571,7 @@ func TestBigBatchEstimate(t *testing.T) {
 		"type": "broadcast",
 		"namespace": "default",
 		"node": "248ba775-f595-40a6-a989-c2f2faae2dea",
-		"author": "did:firefly:org/org_0",
+		"author": "did:gdc:org/org_0",
 		"key": "0x7e3bb2198959d3a1c3ede9db1587560320ce8998",
 		"Group": null,
 		"created": "2022-03-18T14:57:33.228374398Z",
@@ -587,7 +587,7 @@ func TestBigBatchEstimate(t *testing.T) {
 				"id": "2b393190-28e7-4b86-8af6-00906e94989b",
 				"type": "broadcast",
 				"txtype": "batch_pin",
-				"author": "did:firefly:org/org_0",
+				"author": "did:gdc:org/org_0",
 				"key": "0x7e3bb2198959d3a1c3ede9db1587560320ce8998",
 				"created": "2022-03-18T14:57:32.209734225Z",
 				"namespace": "default",

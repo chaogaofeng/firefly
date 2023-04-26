@@ -69,7 +69,7 @@ If we want to create a new custom identity under the organizational identity tha
     "org": {
         "name": "org_0",
         "registered": true,
-        "did": "did:firefly:org/org_0",
+        "did": "did:gdc:org/org_0",
         "id": "1c0abf75-0f3a-40e4-a8cd-5ff926f80aa8", // We need this in Step 3
         "verifiers": [
             {
@@ -104,7 +104,7 @@ Now we can `POST` to the identities endpoint to create a new custom identity. We
 ```js
 {
     "id": "5ea8f770-e004-48b5-af60-01994230ed05",
-    "did": "did:firefly:myCustomIdentity",
+    "did": "did:gdc:myCustomIdentity",
     "type": "custom",
     "parent": "1c0abf75-0f3a-40e4-a8cd-5ff926f80aa8",
     "namespace": "",
@@ -133,7 +133,7 @@ Lastly, if we want to confirm that the new identity has been created, we can que
 [
     {
         "id": "5ea8f770-e004-48b5-af60-01994230ed05",
-        "did": "did:firefly:myCustomIdentity",
+        "did": "did:gdc:myCustomIdentity",
         "type": "custom",
         "parent": "1c0abf75-0f3a-40e4-a8cd-5ff926f80aa8",
         "namespace": "default",

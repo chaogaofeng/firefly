@@ -45,7 +45,7 @@ func TestBatch2EWithDB(t *testing.T) {
 			Type: core.BatchTypeBroadcast,
 			SignerRef: core.SignerRef{
 				Key:    "0x12345",
-				Author: "did:firefly:org/abcd",
+				Author: "did:gdc:org/abcd",
 			},
 			Namespace: "ns1",
 			Node:      fftypes.NewUUID(),
@@ -86,7 +86,7 @@ func TestBatch2EWithDB(t *testing.T) {
 			Type: core.BatchTypePrivate,
 			SignerRef: core.SignerRef{
 				Key:    "0x12345",
-				Author: "did:firefly:org/abcd",
+				Author: "did:gdc:org/abcd",
 			},
 			Namespace: "ns1",
 			Node:      fftypes.NewUUID(),

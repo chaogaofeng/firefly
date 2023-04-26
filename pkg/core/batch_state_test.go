@@ -60,7 +60,7 @@ func TestBatchStateIdentities(t *testing.T) {
 	msg := &Message{}
 	bs.AddPendingConfirm(id, msg)
 
-	did := "did:firefly:id1"
+	did := "did:gdc:id1"
 	bs.AddConfirmedDIDClaim(did)
 
 	assert.Equal(t, msg, bs.PendingConfirms[*id])

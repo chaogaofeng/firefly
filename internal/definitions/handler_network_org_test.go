@@ -35,7 +35,7 @@ const oldOrgExampleMessage = `{
       "id": "6c138623-d995-4c40-b17b-81a00e7d150c",
       "type": "definition",
       "txtype": "batch_pin",
-      "author": "did:firefly:org/f08153cc-c605-4239-9087-e08747e1fb4e",
+      "author": "did:gdc:org/f08153cc-c605-4239-9087-e08747e1fb4e",
       "key": "0x214840c7c62cddf7a854a830d55018b38e4e78be",
       "created": "2022-02-24T15:30:58.985588799Z",
       "namespace": "ff_system",

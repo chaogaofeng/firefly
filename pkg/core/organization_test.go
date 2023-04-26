@@ -38,7 +38,7 @@ func TestOrgMigration(t *testing.T) {
 			IdentityBase: IdentityBase{
 				ID:        org.ID,
 				Type:      IdentityTypeOrg,
-				DID:       "did:firefly:org/org1",
+				DID:       "did:gdc:org/org1",
 				Namespace: LegacySystemNamespace,
 				Name:      "org1",
 			},

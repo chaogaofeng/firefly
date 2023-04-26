@@ -40,10 +40,10 @@ var (
 
 const (
 	DIDPrefix              = "did:"
-	FireFlyDIDPrefix       = "did:firefly:"
-	FireFlyOrgDIDPrefix    = "did:firefly:org/"
-	FireFlyNodeDIDPrefix   = "did:firefly:node/"
-	FireFlyCustomDIDPrefix = "did:firefly:"
+	FireFlyDIDPrefix       = "did:gdc:"
+	FireFlyOrgDIDPrefix    = "did:gdc:org/"
+	FireFlyNodeDIDPrefix   = "did:gdc:node/"
+	FireFlyCustomDIDPrefix = "did:gdc:"
 )
 
 type IdentityMessages struct {

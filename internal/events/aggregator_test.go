@@ -1749,8 +1749,8 @@ func TestDispatchPrivateQueuesLaterDispatch(t *testing.T) {
 	ag.mdm.On("GetMessageWithDataCached", ag.ctx, msg2.Header.ID, data.CRORequirePins).Return(msg2, data2, true, nil).Once()
 
 	initNPG := &nextPinGroupState{topic: "topic1", groupID: groupID}
-	member1NonceOne := initNPG.calcPinHash("did:firefly:org/org1", 1)
-	member1NonceTwo := initNPG.calcPinHash("did:firefly:org/org1", 2)
+	member1NonceOne := initNPG.calcPinHash("did:gdc:org/org1", 1)
+	member1NonceTwo := initNPG.calcPinHash("did:gdc:org/org1", 2)
 	context := broadcastContext("topic1")
 
 	ag.mdi.On("GetNextPinsForContext", ag.ctx, "ns1", mock.Anything).Return([]*core.NextPin{
@@ -2172,7 +2172,7 @@ func TestProcessWithBatchRewindsSuccess(t *testing.T) {
 	}
 
 	err := ag.processWithBatchState(func(ctx context.Context, actions *batchState) error {
-		actions.AddConfirmedDIDClaim("did:firefly:org/test")
+		actions.AddConfirmedDIDClaim("did:gdc:org/test")
 		return nil
 	})
 	assert.NoError(t, err)

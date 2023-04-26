@@ -38,7 +38,7 @@ const oldNodeExample = `
       "id": "811de0e6-6c07-445f-99fb-e2f457a9f140",
       "type": "definition",
       "txtype": "batch_pin",
-      "author": "did:firefly:org/f08153cc-c605-4239-9087-e08747e1fb4e",
+      "author": "did:gdc:org/f08153cc-c605-4239-9087-e08747e1fb4e",
       "key": "0x214840c7c62cddf7a854a830d55018b38e4e78be",
       "created": "2022-02-24T15:31:01.711696467Z",
       "namespace": "ff_system",

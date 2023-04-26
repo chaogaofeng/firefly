@@ -25,7 +25,7 @@ nav_order: 14
 ```json
 {
     "id": "114f5857-9983-46fb-b1fc-8c8f0a20846c",
-    "did": "did:firefly:org/org_1",
+    "did": "did:gdc:org/org_1",
     "type": "org",
     "parent": "688072c3-4fa0-436c-a86b-5d89673b8938",
     "namespace": "ff_system",

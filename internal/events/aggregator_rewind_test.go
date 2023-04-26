@@ -57,7 +57,7 @@ func TestRewinderE2E(t *testing.T) {
 	ag.queueBatchRewind(batchID1)
 	ag.queueBlobRewind(fftypes.NewRandB32())
 	ag.queueMessageRewind(fftypes.NewUUID())
-	ag.queueDIDRewind("did:firefly:org/bob")
+	ag.queueDIDRewind("did:gdc:org/bob")
 	ag.queueBatchRewind(batchID5)
 
 	allReceived := make(map[fftypes.UUID]bool)

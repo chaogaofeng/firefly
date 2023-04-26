@@ -108,12 +108,12 @@ func TestSubscriptionUnMarshalFail(t *testing.T) {
 }
 
 func TestNewSubscriptionFilterFromQuery(t *testing.T) {
-	query, _ := url.ParseQuery("filter.events=message_confirmed&filter.topic=topic1&filter.message.author=did:firefly:org/author1&filter.blockchain.name=flapflip&filter.transaction.type=test&filter.group=deprecated")
+	query, _ := url.ParseQuery("filter.events=message_confirmed&filter.topic=topic1&filter.message.author=did:gdc:org/author1&filter.blockchain.name=flapflip&filter.transaction.type=test&filter.group=deprecated")
 	expectedFilter := SubscriptionFilter{
 		Events: "message_confirmed",
 		Topic:  "topic1",
 		Message: MessageFilter{
-			Author: "did:firefly:org/author1",
+			Author: "did:gdc:org/author1",
 		},
 		BlockchainEvent: BlockchainEventFilter{
 			Name: "flapflip",

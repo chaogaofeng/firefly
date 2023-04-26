@@ -42,7 +42,7 @@ func TestIdentitiesE2EWithDB(t *testing.T) {
 	identity := &core.Identity{
 		IdentityBase: core.IdentityBase{
 			ID:        identityID,
-			DID:       "did:firefly:/ns/ns1/1",
+			DID:       "did:gdc:/ns/ns1/1",
 			Parent:    fftypes.NewUUID(),
 			Type:      core.IdentityTypeCustom,
 			Namespace: "ns1",
@@ -75,7 +75,7 @@ func TestIdentitiesE2EWithDB(t *testing.T) {
 	identityUpdated := &core.Identity{
 		IdentityBase: core.IdentityBase{
 			ID:        identityID,
-			DID:       "did:firefly:/nodes/2",
+			DID:       "did:gdc:/nodes/2",
 			Parent:    fftypes.NewUUID(),
 			Type:      core.IdentityTypeNode,
 			Namespace: "ns1",
@@ -205,7 +205,7 @@ func TestGetIdentityByNameSelectFail(t *testing.T) {
 func TestGetIdentityByIdentitySelectFail(t *testing.T) {
 	s, mock := newMockProvider().init()
 	mock.ExpectQuery("SELECT .*").WillReturnError(fmt.Errorf("pop"))
-	_, err := s.GetIdentityByDID(context.Background(), "ns1", "did:firefly:org/org1")
+	_, err := s.GetIdentityByDID(context.Background(), "ns1", "did:gdc:org/org1")
 	assert.Regexp(t, "FF00176", err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }

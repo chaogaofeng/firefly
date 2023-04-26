@@ -31,11 +31,11 @@ func TestGetIdentityByDID(t *testing.T) {
 	o.On("Authorize", mock.Anything, mock.Anything).Return(nil)
 	nmn := &networkmapmocks.Manager{}
 	o.On("NetworkMap").Return(nmn)
-	req := httptest.NewRequest("GET", "/api/v1/identities/did:firefly:org/org_1", nil)
+	req := httptest.NewRequest("GET", "/api/v1/identities/did:gdc:org/org_1", nil)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	res := httptest.NewRecorder()
 
-	nmn.On("GetIdentityByDID", mock.Anything, "did:firefly:org/org_1").
+	nmn.On("GetIdentityByDID", mock.Anything, "did:gdc:org/org_1").
 		Return(&core.Identity{}, nil)
 	r.ServeHTTP(res, req)
 
@@ -47,11 +47,11 @@ func TestGetIdentityByDIDWithVerifiers(t *testing.T) {
 	o.On("Authorize", mock.Anything, mock.Anything).Return(nil)
 	nmn := &networkmapmocks.Manager{}
 	o.On("NetworkMap").Return(nmn)
-	req := httptest.NewRequest("GET", "/api/v1/identities/did:firefly:org/org_1?fetchverifiers", nil)
+	req := httptest.NewRequest("GET", "/api/v1/identities/did:gdc:org/org_1?fetchverifiers", nil)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	res := httptest.NewRecorder()
 
-	nmn.On("GetIdentityByDIDWithVerifiers", mock.Anything, "did:firefly:org/org_1").
+	nmn.On("GetIdentityByDIDWithVerifiers", mock.Anything, "did:gdc:org/org_1").
 		Return(&core.IdentityWithVerifiers{}, nil)
 	r.ServeHTTP(res, req)
 

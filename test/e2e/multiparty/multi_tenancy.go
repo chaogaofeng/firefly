@@ -141,18 +141,18 @@ func (suite *NamespaceAliasSuite) TestMultiTenancy() {
 	e2e.WaitForMessageConfirmed(suite.T(), receivedCharlie, core.MessageTypeBroadcast)
 
 	toAlice := []core.MemberInput{
-		{Identity: suite.testState.org1.Name, Node: "did:firefly:node/alice"},
+		{Identity: suite.testState.org1.Name, Node: "did:gdc:node/alice"},
 	}
 	toBob := []core.MemberInput{
-		{Identity: suite.testState.org1.Name, Node: "did:firefly:node/bob"},
+		{Identity: suite.testState.org1.Name, Node: "did:gdc:node/bob"},
 	}
 	toCharlie := []core.MemberInput{
-		{Identity: suite.testState.org2.Name, Node: "did:firefly:node/charlie"},
+		{Identity: suite.testState.org2.Name, Node: "did:gdc:node/charlie"},
 	}
 	toAll := []core.MemberInput{
-		{Identity: suite.testState.org1.Name, Node: "did:firefly:node/alice"},
-		{Identity: suite.testState.org1.Name, Node: "did:firefly:node/bob"},
-		{Identity: suite.testState.org2.Name, Node: "did:firefly:node/charlie"},
+		{Identity: suite.testState.org1.Name, Node: "did:gdc:node/alice"},
+		{Identity: suite.testState.org1.Name, Node: "did:gdc:node/bob"},
+		{Identity: suite.testState.org2.Name, Node: "did:gdc:node/charlie"},
 	}
 
 	// Verify that private messages on the new namespace succeed

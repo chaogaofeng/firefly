@@ -47,7 +47,7 @@ func TestBroadcastMessageOk(t *testing.T) {
 		Message: core.Message{
 			Header: core.MessageHeader{
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/abcd",
+					Author: "did:gdc:org/abcd",
 					Key:    "0x12345",
 				},
 			},
@@ -78,7 +78,7 @@ func TestBroadcastMessageWriteFail(t *testing.T) {
 		Message: core.Message{
 			Header: core.MessageHeader{
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/abcd",
+					Author: "did:gdc:org/abcd",
 					Key:    "0x12345",
 				},
 			},
@@ -123,7 +123,7 @@ func TestBroadcastMessageWaitConfirmOk(t *testing.T) {
 		Message: core.Message{
 			Header: core.MessageHeader{
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/abcd",
+					Author: "did:gdc:org/abcd",
 					Key:    "0x12345",
 				},
 			},
@@ -162,7 +162,7 @@ func TestBroadcastMessageTooLarge(t *testing.T) {
 		Message: core.Message{
 			Header: core.MessageHeader{
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/abcd",
+					Author: "did:gdc:org/abcd",
 					Key:    "0x12345",
 				},
 			},
@@ -228,7 +228,7 @@ func TestBroadcastPrepare(t *testing.T) {
 		Message: core.Message{
 			Header: core.MessageHeader{
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/abcd",
+					Author: "did:gdc:org/abcd",
 					Key:    "0x12345",
 				},
 			},

@@ -31,11 +31,11 @@ func TestGetDIDDocByDID(t *testing.T) {
 	o.On("Authorize", mock.Anything, mock.Anything).Return(nil)
 	nmn := &networkmapmocks.Manager{}
 	o.On("NetworkMap").Return(nmn)
-	req := httptest.NewRequest("GET", "/api/v1/network/diddocs/did:firefly:org/org_1", nil)
+	req := httptest.NewRequest("GET", "/api/v1/network/diddocs/did:gdc:org/org_1", nil)
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	res := httptest.NewRecorder()
 
-	nmn.On("GetDIDDocForIndentityByDID", mock.Anything, "did:firefly:org/org_1").
+	nmn.On("GetDIDDocForIndentityByDID", mock.Anything, "did:gdc:org/org_1").
 		Return(&networkmap.DIDDocument{}, nil)
 	r.ServeHTTP(res, req)
 

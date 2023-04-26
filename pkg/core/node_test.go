@@ -42,7 +42,7 @@ func TestNodeigration(t *testing.T) {
 			IdentityBase: IdentityBase{
 				ID:        node.ID,
 				Type:      IdentityTypeNode,
-				DID:       "did:firefly:node/node1",
+				DID:       "did:gdc:node/node1",
 				Namespace: LegacySystemNamespace,
 				Name:      "node1",
 				Parent:    parentID,

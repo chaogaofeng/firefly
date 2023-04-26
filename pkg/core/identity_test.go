@@ -29,7 +29,7 @@ func testOrg() *Identity {
 	return &Identity{
 		IdentityBase: IdentityBase{
 			ID:        fftypes.NewUUID(),
-			DID:       "did:firefly:org/org1",
+			DID:       "did:gdc:org/org1",
 			Type:      IdentityTypeOrg,
 			Namespace: "ns1",
 			Name:      "org1",
@@ -47,7 +47,7 @@ func testNode() *Identity {
 	return &Identity{
 		IdentityBase: IdentityBase{
 			ID:        fftypes.NewUUID(),
-			DID:       "did:firefly:node/node1",
+			DID:       "did:gdc:node/node1",
 			Parent:    fftypes.NewUUID(),
 			Type:      IdentityTypeNode,
 			Namespace: "ns1",
@@ -66,7 +66,7 @@ func testCustom(ns, name string) *Identity {
 	return &Identity{
 		IdentityBase: IdentityBase{
 			ID:        fftypes.NewUUID(),
-			DID:       fmt.Sprintf("did:firefly:%s", name),
+			DID:       fmt.Sprintf("did:gdc:%s", name),
 			Parent:    fftypes.NewUUID(),
 			Type:      IdentityTypeCustom,
 			Namespace: ns,
@@ -106,7 +106,7 @@ func TestIdentityValidationOrgs(t *testing.T) {
 	assert.Regexp(t, "FF00135", o.Validate(ctx))
 
 	o = testOrg()
-	o.DID = "did:firefly:node/node1"
+	o.DID = "did:gdc:node/node1"
 	assert.Regexp(t, "FF00120", o.Validate(ctx))
 
 }
@@ -122,7 +122,7 @@ func TestIdentityValidationNodes(t *testing.T) {
 	assert.Regexp(t, "FF00124", n.Validate(ctx))
 
 	n = testNode()
-	n.DID = "did:firefly:org/org1"
+	n.DID = "did:gdc:org/org1"
 	assert.Regexp(t, "FF00120", n.Validate(ctx))
 
 }
@@ -132,7 +132,7 @@ func TestIdentityValidationCustom(t *testing.T) {
 	ctx := context.Background()
 	c := testCustom("ns1", "custom1")
 	assert.NoError(t, c.Validate(ctx))
-	c.DID = fmt.Sprintf("did:firefly:ns/%s/%s", c.Namespace, c.Name)
+	c.DID = fmt.Sprintf("did:gdc:ns/%s/%s", c.Namespace, c.Name)
 	assert.NoError(t, c.Validate(ctx))
 
 	c = testCustom("ns1", "custom1")
@@ -140,7 +140,7 @@ func TestIdentityValidationCustom(t *testing.T) {
 	assert.Regexp(t, "FF00124", c.Validate(ctx))
 
 	c = testCustom("ns1", "custom1")
-	c.DID = "did:firefly:ns/ns2/custom1"
+	c.DID = "did:gdc:ns/ns2/custom1"
 	assert.Regexp(t, "FF00120", c.Validate(ctx))
 
 	c = testCustom("ns1", "custom1")

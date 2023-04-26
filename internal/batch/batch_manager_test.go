@@ -117,7 +117,7 @@ func TestE2EDispatchBroadcast(t *testing.T) {
 			ID:        fftypes.NewUUID(),
 			Topics:    []string{"topic1", "topic2"},
 			Namespace: "ns1",
-			SignerRef: core.SignerRef{Author: "did:firefly:org/abcd", Key: "0x12345"},
+			SignerRef: core.SignerRef{Author: "did:gdc:org/abcd", Key: "0x12345"},
 		},
 		Data: core.DataRefs{
 			{ID: dataID1, Hash: dataHash},
@@ -203,7 +203,7 @@ func TestE2EDispatchPrivateUnpinned(t *testing.T) {
 		h := sha256.New()
 		nonceBytes, _ := hex.DecodeString(
 			"746f70696331" + "44dc0861e69d9bab17dd5e90a8898c2ea156ad04e5fabf83119cc010486e6c1b" + "6469643a66697265666c793a6f72672f61626364" + "0000000000003039",
-		/*|  topic1   |    | ---- group id -------------------------------------------------|   |author'"did:firefly:org/abcd'            |  |i64 nonce (12345) */
+		/*|  topic1   |    | ---- group id -------------------------------------------------|   |author'"did:gdc:org/abcd'            |  |i64 nonce (12345) */
 		/*|               context                                                           |   |          sender + nonce             */
 		) // little endian 12345 in 8 byte hex
 		h.Write(nonceBytes)
@@ -212,7 +212,7 @@ func TestE2EDispatchPrivateUnpinned(t *testing.T) {
 		h = sha256.New()
 		nonceBytes, _ = hex.DecodeString(
 			"746f70696332" + "44dc0861e69d9bab17dd5e90a8898c2ea156ad04e5fabf83119cc010486e6c1b" + "6469643a66697265666c793a6f72672f61626364" + "0000000000003039",
-		/*|   topic2  |    | ---- group id -------------------------------------------------|   |author'"did:firefly:org/abcd'            |  |i64 nonce (12345) */
+		/*|   topic2  |    | ---- group id -------------------------------------------------|   |author'"did:gdc:org/abcd'            |  |i64 nonce (12345) */
 		/*|               context                                                           |   |          sender + nonce             */
 		) // little endian 12345 in 8 byte hex
 		h.Write(nonceBytes)
@@ -239,7 +239,7 @@ func TestE2EDispatchPrivateUnpinned(t *testing.T) {
 			ID:        fftypes.NewUUID(),
 			Topics:    []string{"topic1", "topic2"},
 			Namespace: "ns1",
-			SignerRef: core.SignerRef{Author: "did:firefly:org/abcd", Key: "0x12345"},
+			SignerRef: core.SignerRef{Author: "did:gdc:org/abcd", Key: "0x12345"},
 			Group:     &groupID,
 		},
 		Data: core.DataRefs{

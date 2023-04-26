@@ -49,7 +49,7 @@ INSERT INTO identities (
     updated
   ) SELECT 
     o1.id,
-    'did:firefly:org/' || o1.name,
+    'did:gdc:org/' || o1.name,
     o2.id,
     o1.message_id,
     'org',
@@ -76,7 +76,7 @@ INSERT INTO identities (
     updated
   ) SELECT 
     n.id,
-    'did:firefly:node/' || n.name,
+    'did:gdc:node/' || n.name,
     o.id,
     n.message_id,
     'node',

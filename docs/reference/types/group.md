@@ -28,11 +28,11 @@ nav_order: 19
     "name": "",
     "members": [
         {
-            "identity": "did:firefly:org/1111",
+            "identity": "did:gdc:org/1111",
             "node": "4f563179-b4bd-4161-86e0-c2c1c0869c4f"
         },
         {
-            "identity": "did:firefly:org/2222",
+            "identity": "did:gdc:org/2222",
             "node": "61a99af8-c1f7-48ea-8fcc-489e4822a0ed"
         }
     ],

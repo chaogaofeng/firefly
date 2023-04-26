@@ -48,7 +48,7 @@ func TestPersistBatch(t *testing.T) {
 		BatchHeader: core.BatchHeader{
 			ID: fftypes.NewUUID(),
 			SignerRef: core.SignerRef{
-				Author: "did:firefly:org/12345",
+				Author: "did:gdc:org/12345",
 				Key:    "0x12345",
 			},
 		},
@@ -63,7 +63,7 @@ func TestPersistBatch(t *testing.T) {
 						ID:   fftypes.NewUUID(),
 						Type: core.MessageTypeDefinition,
 						SignerRef: core.SignerRef{
-							Author: "did:firefly:org/12345",
+							Author: "did:gdc:org/12345",
 							Key:    "0x12345",
 						},
 					},

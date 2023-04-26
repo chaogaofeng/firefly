@@ -465,7 +465,7 @@ func GenerateObjectsReferenceMarkdown(ctx context.Context) (map[string][]byte, e
 		&core.Identity{
 			IdentityBase: core.IdentityBase{
 				ID:        fftypes.MustParseUUID("114f5857-9983-46fb-b1fc-8c8f0a20846c"),
-				DID:       "did:firefly:org/org_1",
+				DID:       "did:gdc:org/org_1",
 				Parent:    fftypes.MustParseUUID("688072c3-4fa0-436c-a86b-5d89673b8938"),
 				Type:      core.IdentityTypeOrg,
 				Namespace: "ff_system",
@@ -496,7 +496,7 @@ func GenerateObjectsReferenceMarkdown(ctx context.Context) (map[string][]byte, e
 				CID:    fftypes.MustParseUUID("00d20cba-76ed-431d-b9ff-f04b4cbee55c"),
 				TxType: core.TransactionTypeBatchPin,
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/acme",
+					Author: "did:gdc:org/acme",
 					Key:    "0xD53B0294B6a596D404809b1d51D1b4B3d1aD4945",
 				},
 				Created:   fftypes.UnixTime(1652664190),
@@ -572,11 +572,11 @@ func GenerateObjectsReferenceMarkdown(ctx context.Context) (map[string][]byte, e
 				Namespace: "ns1",
 				Members: core.Members{
 					{
-						Identity: "did:firefly:org/1111",
+						Identity: "did:gdc:org/1111",
 						Node:     fftypes.MustParseUUID("4f563179-b4bd-4161-86e0-c2c1c0869c4f"),
 					},
 					{
-						Identity: "did:firefly:org/2222",
+						Identity: "did:gdc:org/2222",
 						Node:     fftypes.MustParseUUID("61a99af8-c1f7-48ea-8fcc-489e4822a0ed"),
 					},
 				},
@@ -595,7 +595,7 @@ func GenerateObjectsReferenceMarkdown(ctx context.Context) (map[string][]byte, e
 				Group:     fftypes.HashString("examplegroup"),
 				Created:   fftypes.UnixTime(1652664196),
 				SignerRef: core.SignerRef{
-					Author: "did:firefly:org/example",
+					Author: "did:gdc:org/example",
 					Key:    "0x0a989907dcd17272257f3ebcf72f4351df65a846",
 				},
 			},
