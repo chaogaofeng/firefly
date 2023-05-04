@@ -164,6 +164,23 @@ func (gsf *SecretFlow) RunPipeline(ctx context.Context, body *fftypes.JSONObject
 	return nil
 }
 
+func (gsf *SecretFlow) RunPostProxy(ctx context.Context, path string, body *fftypes.JSONObject) (*fftypes.JSONObject, error) {
+	var errRes respError
+	res, err := gsf.client.R().SetContext(ctx).
+		SetBody(body).
+		SetError(&errRes).
+		Post(path)
+	if err != nil || !res.IsSuccess() {
+		return nil, wrapError(ctx, &errRes, res, err)
+	}
+
+	var obj fftypes.JSONObject
+	if err := json.Unmarshal(res.Body(), &obj); err != nil {
+		return nil, i18n.WrapError(ctx, err, i18n.MsgJSONObjectParseFailed, res.Body())
+	}
+	return &obj, nil
+}
+
 func wrapError(ctx context.Context, errRes *respError, res *resty.Response, err error) error {
 	if errRes != nil && errRes.Message != "" {
 		if errRes.Error != "" {

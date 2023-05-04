@@ -148,6 +148,8 @@ var routes = append(
 		postNewTrainingModel,
 		postNewTrainingTask,
 		postNewTrainingJob,
+		postSFContractList,
+		postSFContractListByContracts,
 		postNewDatatype,
 		postNewIdentity,
 		postNewMessageBroadcast,

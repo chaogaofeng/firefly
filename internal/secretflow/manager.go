@@ -39,6 +39,8 @@ type Manager interface {
 	GetTrainingJobByNameOrID(ctx context.Context, nameOrId string) (*core.TrainingJob, error)
 	GetTrainingJobs(ctx context.Context, filter ffapi.AndFilter) ([]*core.TrainingJob, *ffapi.FilterResult, error)
 
+	PostProxy(ctx context.Context, path string, body *fftypes.JSONObject) (*fftypes.JSONObject, error)
+
 	Start() error
 	TrainingJob(ctx context.Context, msg *core.Message, data core.DataArray, tx *fftypes.UUID) error
 	TrainingJobUpdated(ctx context.Context, plugin sf.Plugin, flowId string, compId string, status int, log string) error
@@ -339,4 +341,23 @@ func scanPort(protocol string, hostname string, port uint) bool {
 	}
 	defer conn.Close()
 	return true
+}
+
+func (am *sfManager) PostProxy(ctx context.Context, path string, body *fftypes.JSONObject) (*fftypes.JSONObject, error) {
+	l := log.L(ctx)
+
+	connector, err := am.getDefaultPlugin(ctx)
+	if err != nil {
+		l.Errorf("PostProxy(%s): get default plugin %v", path, err)
+		return nil, err
+	}
+	plugin, err := am.selectPlugin(ctx, connector)
+	if err != nil {
+		l.Errorf("PostProxy(%s): select plugin(%s) %v",path, connector, err)
+		return nil, err
+	}
+	t := time.Now()
+	resp, err := plugin.RunPostProxy(ctx, path, body)
+	l.Infof("PostProxy(%s): elapsed %s ", path, time.Since(t))
+	return resp, err
 }

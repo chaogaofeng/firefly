@@ -33,6 +33,7 @@ type Plugin interface {
 	Capabilities() *Capabilities
 
 	RunPipeline(ctx context.Context, body *fftypes.JSONObject) error
+	RunPostProxy(ctx context.Context, path string, body *fftypes.JSONObject) (*fftypes.JSONObject, error)
 }
 
 // Callbacks is the interface provided to the secretflow plugin, to allow it to pass events back to firefly.
