@@ -103,7 +103,7 @@ func (am *sfManager) Start() error {
 			case <-timer.C:
 				ctx := context.Background()
 				fb := database.TrainingJobQueryFactory.NewFilter(ctx)
-				filter := fb.And(fb.Gt("created", time.Now().Add(-10*time.Minute).UTC()), fb.Eq("status", core.JobStatusPending))
+				filter := fb.And(fb.Gt("created", fftypes.UnixTime(time.Now().Add(-10*time.Minute).Unix())), fb.Eq("status", core.JobStatusPending))
 				jobs, _, err := am.database.GetTrainingJobs(ctx, am.namespace, filter)
 				if err != nil {
 					log.L(ctx).Errorf("submit training job %v", err)
