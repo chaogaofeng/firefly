@@ -57,12 +57,12 @@ func (i *IPFS) Init(ctx context.Context, config config.Section) error {
 	if apiConfig.GetString(ffresty.HTTPConfigURL) == "" {
 		return i18n.NewError(ctx, coremsgs.MsgMissingPluginConfig, apiConfig.Resolve(ffresty.HTTPConfigURL), "ipfs")
 	}
-	i.apiClient = ffresty.New(i.ctx, apiConfig)
+	i.apiClient = ffresty.New(i.ctx, apiConfig).SetHeader("User-Agent", "okhttp/3.14.5")
 	gwConfig := config.SubSection(IPFSConfGatewaySubconf)
 	if gwConfig.GetString(ffresty.HTTPConfigURL) == "" {
 		return i18n.NewError(ctx, coremsgs.MsgMissingPluginConfig, gwConfig.Resolve(ffresty.HTTPConfigURL), "ipfs")
 	}
-	i.gwClient = ffresty.New(i.ctx, gwConfig)
+	i.gwClient = ffresty.New(i.ctx, gwConfig).SetHeader("User-Agent", "okhttp/3.14.5")
 	i.capabilities = &sharedstorage.Capabilities{}
 	return nil
 }
